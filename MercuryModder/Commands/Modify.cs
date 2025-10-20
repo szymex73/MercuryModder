@@ -141,6 +141,26 @@ public class Modify
             cueFile.AddCue($"MER_BGM_S{songId:00_000}", new int[] { spkId, hdpId }, (int)hca.Milliseconds);
             awbCounter += 1;
 
+            string infCue = $"MER_BGM_S{songId:00_000}";
+
+            if (File.Exists($"{song.Directory}/track-inferno.wav"))
+            {
+                // Take care of an inf audio cut if one is provided
+                hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track-inferno.wav");
+                hca = new HcaTrack(hcaBytes);
+                awb.Add(new CriAfs2Entry
+                {
+                    Id = awbCounter,
+                    FilePath = new FileInfo($"{song.Directory}/track-inferno.hca")
+                });
+
+                spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, false);
+                hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, true);
+                cueFile.AddCue($"MER_BGM_S{songId:00_000}_INF", new int[] { spkId, hdpId }, (int)hca.Milliseconds);
+                infCue = $"MER_BGM_S{songId:00_000}_INF";
+                awbCounter += 1;
+            }
+
             var chartOutDirectory = $"{outputDir}/Mercury/Content/MusicData/S{songId:00-000}";
             Directory.CreateDirectory(chartOutDirectory);
             var nwa = new NotationWriteArgs()
@@ -157,8 +177,7 @@ public class Modify
             song.Expert.Entry.AudioFile = $"MER_BGM_S{songId:00_000}";
             NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_02.mer", song.Expert.Entry, song.Expert.Chart, nwa);
             files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_02.mer");
-            // TODO: Check for a separate audio cut for inf?
-            song.Inferno.Entry.AudioFile = $"MER_BGM_S{songId:00_000}";
+            song.Inferno.Entry.AudioFile = infCue;
             NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_03.mer", song.Inferno.Entry, song.Inferno.Chart, nwa);
             files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_03.mer");
         }

@@ -5,4 +5,4 @@ This tool works with the assumption that you have two copies of your game - a cl
 
 The tool was tested under Linux, should work under Windows as well.
 
-Big thanks to everyone in that one Discord server for all the help when writing and debugging this and numerous other things
+Big thanks to everyone in that one Discord server for all the help when writing and debugging this and numerous other things.
