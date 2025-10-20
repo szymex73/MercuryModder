@@ -1,0 +1,12 @@
+#MUSIC_SCORE_ID 0
+#MUSIC_SCORE_VERSION 0
+#GAME_VERSION
+#MUSIC_FILE_PATH
+#OFFSET 0.000000
+#MOVIEOFFSET 0.000000
+#BODY
+   0    0    2 100.000000
+   0    0    3     4     4
+   0    0    1   12    0   15   60    1    2
+   0  960    1    1    1   15   60    1
+   1  960    1   14 2    0   60    1
