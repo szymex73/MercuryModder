@@ -219,6 +219,9 @@ public class Modify
             // Add UIT entry
             infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, infId));
 
+            // Create the chart in the output dir
+            Directory.CreateDirectory($"{outputDir}/Mercury/Content/MusicData/S{infId:00-000}");
+
             // Write the chart
             var nwa = new NotationWriteArgs()
             {
