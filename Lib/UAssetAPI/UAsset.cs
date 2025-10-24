@@ -486,7 +486,7 @@ namespace UAssetAPI
                         var targetFile = Path.ChangeExtension(p, "uexp");
                         if (File.Exists(targetFile))
                         {
-                            using (FileStream newStream = File.Open(targetFile, FileMode.Open))
+                            using (FileStream newStream = File.Open(targetFile, FileMode.Open, FileAccess.Read))
                             {
                                 completeStream.Seek(0, SeekOrigin.End);
                                 newStream.CopyTo(completeStream);
