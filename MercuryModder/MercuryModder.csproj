@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="./Lib/SaturnData/SaturnData/SaturnData.csproj">
+    <ProjectReference Include="./../Lib/SaturnData/SaturnData/SaturnData.csproj">
       <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
       <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     </ProjectReference>
