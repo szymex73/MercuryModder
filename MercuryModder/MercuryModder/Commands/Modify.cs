@@ -88,6 +88,7 @@ public class Modify
         Directory.CreateDirectory($"{outputDir}/Mercury/Content/UI/Textures/JACKET/S07");
 
         var idStore = IDStore.ReadFromFile($"{trackDir}/song_ids.toml");
+        var diveOutput = new List<DiVEwallHelper.DiVEwallSongEntry>();
         var songIdCounter = startId;
         foreach (var song in songs)
         {
@@ -107,7 +108,7 @@ public class Modify
             }
 
             if (songId == -1) throw new Exception($"Somehow songId was left at -1");
-            
+
             Console.WriteLine($"{songId:0000} | Processing {song.Info.Title}");
 
             if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId));
@@ -180,6 +181,23 @@ public class Modify
             song.Inferno.Entry.AudioFile = infCue;
             NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_03.mer", song.Inferno.Entry, song.Inferno.Chart, nwa);
             files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_03.mer");
+
+            diveOutput.Add(new DiVEwallHelper.DiVEwallSongEntry()
+            {
+                id = songId,
+                name = song.Info.Title,
+                artist = song.Info.Artist,
+                version = 6, // Hardcoded to be above Reverse
+                bpm = song.Info.Bpm,
+                // The game needs N/H/E to be above 0, but DiVEwall can handle it being empty for dummy diffs
+                diffNormal = song.Normal.Dummy ? 0f : (float)song.Normal.Entry.Level,
+                diffHard = song.Hard.Dummy ? 0f : (float)song.Hard.Entry.Level,
+                diffExpert = song.Expert.Dummy ? 0f : (float)song.Expert.Entry.Level,
+                diffInferno = song.Inferno.Dummy ? 0f : (float)song.Inferno.Entry.Level,
+                verAdded = 40000, // Hardcoded as "4.00.00"
+                verRemoved = 0,
+                infAdded = song.Inferno.Dummy ? 0 : 40000, // Hardcoded to be above Reverse if Inf is provided
+            });
         }
 
         foreach (var song in infernos)
@@ -231,6 +249,22 @@ public class Modify
             song.Inferno.Entry.AudioFile = cueName;
             NotationSerializer.ToFile($"{outputDir}/Mercury/Content/MusicData/S{infId:00-000}/S{infId:00-000}_03.mer", song.Inferno.Entry, song.Inferno.Chart, nwa);
             files.Add($"/Mercury/Content/MusicData/S{infId:00-000}/S{infId:00-000}_03.mer");
+
+            diveOutput.Add(new DiVEwallHelper.DiVEwallSongEntry()
+            {
+                id = infId,
+                name = (songEntry["MusicMessage"] as StrPropertyData).Value.ToString(),
+                artist = (songEntry["ArtistMessage"] as StrPropertyData).Value.ToString(),
+                version = (songEntry["VersionNo"] as UInt32PropertyData).Value,
+                bpm = (songEntry["Bpm"] as StrPropertyData).Value.ToString(),
+                diffNormal = (songEntry["DifficultyNormalLv"] as FloatPropertyData).Value,
+                diffHard = (songEntry["DifficultyHardLv"] as FloatPropertyData).Value,
+                diffExpert = (songEntry["DifficultyExtremeLv"] as FloatPropertyData).Value,
+                diffInferno = (songEntry["DifficultyInfernoLv"] as FloatPropertyData).Value,
+                verAdded = 0, // TODO: Figure out what should be here w/ yellow
+                verRemoved = 0,
+                infAdded = 40000,
+            });
         }
 
         var awbFile = File.Open($"{outputDir}/Mercury/Content/Sound/Bgm/MER_BGM_V73.awb", FileMode.OpenOrCreate);
@@ -272,6 +306,7 @@ public class Modify
             }
         }
         IDStore.SaveToFile(idStore, $"{trackDir}/song_ids.toml");
+        File.WriteAllBytes($"{trackDir}/songs.tsv", DiVEwallHelper.FormatTsv(diveOutput));
     }
 
     private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId)
@@ -284,7 +319,7 @@ public class Modify
                 new StrPropertyData(FName.FromString(asset, "MusicMessage")) { Value = FString.FromString(song.Info.Title) },
                 new StrPropertyData(FName.FromString(asset, "ArtistMessage")) { Value = FString.FromString(song.Info.Artist) },
                 new StrPropertyData(FName.FromString(asset, "CopyrightMessage")) { Value = FString.FromString("-") },
-                new UInt32PropertyData(FName.FromString(asset, "VersionNo")) { Value = 0 },
+                new UInt32PropertyData(FName.FromString(asset, "VersionNo")) { Value = 3 }, // Hardcode to be sorted into Reverse
                 new StrPropertyData(FName.FromString(asset, "AssetDirectory")) { Value = FString.FromString($"S{songId:00-000}") },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetName")) { Value = FString.FromString("-") },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetNameHard")) { Value = null },
@@ -419,7 +454,8 @@ public class Modify
                 File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
 
                 return hcaBytes;
-            } else
+            }
+            else
             {
                 // Same mtime so we can use the cached file
                 return File.ReadAllBytes(hcaPath);
