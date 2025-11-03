@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MercuryModder.Assets;
 using MercuryModder.Helpers;
+using SaturnData.Notation.Core;
 using SaturnData.Notation.Serialization;
 using SkiaSharp;
 using SonicAudioLib.Archives;
@@ -361,10 +362,10 @@ public class Modify
                 new FloatPropertyData(FName.FromString(asset, "DifficultyExtremeLv")) { Value = (float) song.Expert.Entry.Level },
                 new FloatPropertyData(FName.FromString(asset, "DifficultyInfernoLv")) { Value = song.Inferno != null ? (float) song.Inferno.Entry.Level : 0 },
 
-                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateNormal")) { Value = song.Normal.Entry.ClearThreshold },
-                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateHard")) { Value = song.Hard.Entry.ClearThreshold },
-                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateExtreme")) { Value = song.Expert.Entry.ClearThreshold },
-                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateInferno")) { Value = song.Inferno != null ? song.Inferno.Entry.ClearThreshold : 0 },
+                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateNormal")) { Value = Entry.GetAutoClearThreshold(Difficulty.Normal) },
+                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateHard")) { Value = Entry.GetAutoClearThreshold(Difficulty.Hard) },
+                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateExtreme")) { Value = Entry.GetAutoClearThreshold(Difficulty.Expert) },
+                new FloatPropertyData(FName.FromString(asset, "ClearNormaRateInferno")) { Value = song.Inferno != null ? Entry.GetAutoClearThreshold(Difficulty.Inferno) : 0 },
 
                 new FloatPropertyData(FName.FromString(asset, "PreviewBeginTime")) { Value = song.Info.PreviewStart },
                 new FloatPropertyData(FName.FromString(asset, "PreviewSeconds")) { Value = song.Info.PreviewLength },
