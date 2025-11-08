@@ -86,8 +86,6 @@ public class Modify
         uint awbCounter = 0;
         var awbId = (uint)cueFile.AddAwb("MER_BGM_V73");
 
-        Directory.CreateDirectory($"{outputDir}/Mercury/Content/UI/Textures/JACKET/S07");
-
         var idStore = IDStore.ReadFromFile($"{trackDir}/song_ids.toml");
         var diveOutput = new List<DiVEwallHelper.DiVEwallSongEntry>();
         var songIdCounter = startId;
@@ -118,6 +116,8 @@ public class Modify
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
             if (song.Inferno != null) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
 
+            var jacketDir = $"{outputDir}/Mercury/Content/UI/Textures/JACKET/S{startId / 1000:00}";
+            if (!Directory.Exists(jacketDir)) Directory.CreateDirectory(jacketDir);
             var jacketFilename = $"S{songId / 1000:00}/uT_J_S{songId:00_000}";
             var jacketName = $"uT_J_S{songId:00_000}";
             var jacket = new Texture2DAsset($"{gameDir}/Mercury/Content/UI/Textures/JACKET/S00/uT_J_S00_024.uasset");
