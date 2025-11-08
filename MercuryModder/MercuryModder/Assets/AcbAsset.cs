@@ -193,9 +193,9 @@ public class AcbAsset
         MainTable.Rows[0]["StreamAwbAfs2Header"] = StreamAwbHeadersTable.Save();
 
         // Extend AwbTocWork, seems to be used as some internal scratch buffer in memory after loading? (lol)
-        var tocWork = MainTable.Rows[0]["StreamAwbTocWork"] as byte[];
-        Array.Resize(ref tocWork, tocWork.Length + 172 * 24); // TODO: seems to be 172 * song count from checks, but need to do comparisons between game vers
-        MainTable.Rows[0]["StreamAwbTocWork"] = tocWork;
+        // var tocWork = MainTable.Rows[0]["StreamAwbTocWork"] as byte[];
+        // Array.Resize(ref tocWork, tocWork.Length + 172 * 24); // TODO: seems to be 172 * song count from checks, but need to do comparisons between game vers
+        MainTable.Rows[0]["StreamAwbTocWork"] = new byte[172 * CueTable.Rows.Count];
 
         // Serialize root table
         MainTable.WriterSettings = CriTableWriterSettings.Adx2Settings;
