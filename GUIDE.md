@@ -18,10 +18,10 @@ custom_tracks
     |-track.wav
   |-Song2 // Example song with just .sat
     |-jacket.png
-    |-0.sat
-    |-1.sat
-    |-2.sat
-    |-3.sat
+    |-0_normal.sat
+    |-1_hard.sat
+    |-2_expert.sat
+    |-3_inferno.sat
     |-track.wav
   |-Song3 // Example song with only the expert diff in .mer
     |-meta.toml
@@ -45,7 +45,7 @@ custom_tracks
   |-Song5
 |-Inferno // Separate dir for Inferno diffs on existing songs
   |-1002 // ID of an existing song
-    |-3.sat
+    |-3_inferno.sat
     |-track.wav // Optional, only if a different audio cut is used
   |-1003
     |-inferno.mer

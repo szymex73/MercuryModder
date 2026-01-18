@@ -50,10 +50,16 @@ public class Song
         ChartContainer hard = ChartContainer.GetDummy(1f);
         ChartContainer expert = ChartContainer.GetDummy(1f);
         ChartContainer inferno = ChartContainer.GetDummy(0f);
-        if (File.Exists($"{songDirectory}/0.sat")) normal = new ChartContainer($"{songDirectory}/0.sat", nra);
-        if (File.Exists($"{songDirectory}/1.sat")) hard = new ChartContainer($"{songDirectory}/1.sat", nra);
-        if (File.Exists($"{songDirectory}/2.sat")) expert = new ChartContainer($"{songDirectory}/2.sat", nra);
-        if (File.Exists($"{songDirectory}/3.sat")) inferno = new ChartContainer($"{songDirectory}/3.sat", nra);
+
+        foreach (var file in songDirectory.GetFiles("*.sat").OrderBy(f => f))
+        {
+            var cc = new ChartContainer(file.FullName, nra);
+            
+            if (cc.Entry.Difficulty == Difficulty.Normal) normal = cc;
+            if (cc.Entry.Difficulty == Difficulty.Hard) hard = cc;
+            if (cc.Entry.Difficulty == Difficulty.Expert) expert = cc;
+            if (cc.Entry.Difficulty == Difficulty.Inferno) inferno = cc;
+        }
 
         // TODO: Kinda scuffed but best way to do it for now?
         SongInfo? meta = null;
@@ -93,7 +99,7 @@ public class Song
         ChartContainer normal = ChartContainer.GetDummy(1f);
         ChartContainer hard = ChartContainer.GetDummy(1f);
         ChartContainer expert = ChartContainer.GetDummy(1f);
-        ChartContainer inferno = ChartContainer.GetDummy(0f); // 1 instead of 0 since that seems to hide just the inferno then?
+        ChartContainer inferno = ChartContainer.GetDummy(0f);
         if (File.Exists($"{songDirectory}/normal.mer")) normal = new ChartContainer($"{songDirectory}/normal.mer", nra);
         if (File.Exists($"{songDirectory}/hard.mer")) hard = new ChartContainer($"{songDirectory}/hard.mer", nra);
         if (File.Exists($"{songDirectory}/expert.mer")) expert = new ChartContainer($"{songDirectory}/expert.mer", nra);
@@ -201,6 +207,7 @@ public class Song
     {
         public Chart Chart;
         public Entry Entry;
+        public string FileName;
         private bool _dummy = false;
         public bool Dummy { get => _dummy; }
 
@@ -213,6 +220,7 @@ public class Song
 
             if (path.EndsWith(".mer") && Entry.FormatVersion != FormatVersion.Mer) throw new ExceptionList("Received a Sat format file with a .mer extension", []);
 
+            FileName = Path.GetFileName(path);
             Chart.Build(Entry);
         }
 

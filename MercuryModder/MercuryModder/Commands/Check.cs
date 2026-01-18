@@ -115,13 +115,13 @@ public class Check
         Console.WriteLine($"\tArtist: {song.Info.Artist}");
         Console.WriteLine($"\tBpm: {song.Info.Bpm}");
         Console.WriteLine($"\tGenre: {song.Info.Genre}");
-        if (!song.Normal.Dummy) Console.WriteLine($"\tChart Normal : {song.Normal.Entry.Level:00.00} - {song.Normal.Entry.NotesDesigner}");
+        if (!song.Normal.Dummy) Console.WriteLine($"\tChart Normal : {song.Normal.Entry.Level:00.00} - {song.Normal.Entry.NotesDesigner} ({song.Normal.FileName})");
         else Console.WriteLine($"\tChart Normal : Missing");
-        if (!song.Hard.Dummy) Console.WriteLine($"\tChart Hard   : {song.Hard.Entry.Level:00.00} - {song.Hard.Entry.NotesDesigner}");
+        if (!song.Hard.Dummy) Console.WriteLine($"\tChart Hard   : {song.Hard.Entry.Level:00.00} - {song.Hard.Entry.NotesDesigner} ({song.Hard.FileName})");
         else Console.WriteLine($"\tChart Hard   : Missing");
-        if (!song.Expert.Dummy) Console.WriteLine($"\tChart Expert : {song.Expert.Entry.Level:00.00} - {song.Expert.Entry.NotesDesigner}");
+        if (!song.Expert.Dummy) Console.WriteLine($"\tChart Expert : {song.Expert.Entry.Level:00.00} - {song.Expert.Entry.NotesDesigner} ({song.Expert.FileName})");
         else Console.WriteLine($"\tChart Expert : Missing");
-        if (!song.Inferno.Dummy) Console.WriteLine($"\tChart Inferno: {song.Inferno.Entry.Level:00.00} - {song.Inferno.Entry.NotesDesigner}");
+        if (!song.Inferno.Dummy) Console.WriteLine($"\tChart Inferno: {song.Inferno.Entry.Level:00.00} - {song.Inferno.Entry.NotesDesigner} ({song.Inferno.FileName})");
     }
 
     public static bool CheckSong(Song song, out string[] problems, out string[] warnings)
