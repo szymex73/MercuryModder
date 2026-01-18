@@ -51,7 +51,7 @@ public class Song
         ChartContainer expert = ChartContainer.GetDummy(1f);
         ChartContainer inferno = ChartContainer.GetDummy(0f);
 
-        foreach (var file in songDirectory.GetFiles("*.sat").OrderBy(f => f))
+        foreach (var file in songDirectory.GetFiles("*.sat").OrderBy(f => f.FullName))
         {
             var cc = new ChartContainer(file.FullName, nra);
             
