@@ -116,7 +116,7 @@ public class Modify
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
             if (song.Inferno != null) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
 
-            var jacketDir = $"{outputDir}/Mercury/Content/UI/Textures/JACKET/S{startId / 1000:00}";
+            var jacketDir = $"{outputDir}/Mercury/Content/UI/Textures/JACKET/S{songId / 1000:00}";
             if (!Directory.Exists(jacketDir)) Directory.CreateDirectory(jacketDir);
             var jacketFilename = $"S{songId / 1000:00}/uT_J_S{songId:00_000}";
             var jacketName = $"uT_J_S{songId:00_000}";
