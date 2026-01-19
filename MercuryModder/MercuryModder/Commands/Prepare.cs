@@ -9,7 +9,7 @@ public class Prepare
         trackDir.CreateSubdirectory("Anipop");
         trackDir.CreateSubdirectory("Vocaloid");
         trackDir.CreateSubdirectory("Touhou");
-        trackDir.CreateSubdirectory("2.5D");
+        trackDir.CreateSubdirectory("2_5D");
         trackDir.CreateSubdirectory("Variety");
         trackDir.CreateSubdirectory("Original");
         trackDir.CreateSubdirectory("TanoC");

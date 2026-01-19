@@ -5,7 +5,7 @@ namespace MercuryModder.Commands;
 public class Check
 {
     // Used both as dir names and for genre indexing
-    static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2.5D", "Variety", "Original", "TanoC" };
+    static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
     public static void Command(DirectoryInfo trackDir, bool printInfo)
     {

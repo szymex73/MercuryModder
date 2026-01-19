@@ -32,7 +32,7 @@ custom_tracks
 |-Touhou
   |-Song4
   |-Song5
-|-2.5D
+|-2_5D
 |-Variety
   |-Song1
   |-Song3
