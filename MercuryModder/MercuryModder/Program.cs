@@ -45,6 +45,14 @@ public class Program {
         rootCommand.AddCommand(modifyCommand);
         modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, setRecommended);
 
+        var swapbgmCommand = new Command("swapbgm", "Swap attract BGM (don't use)");
+        var newbgmFile = new Option<FileInfo>(name: "--newbgm", description: "Path to a .wav file to be used as the new bgm") { IsRequired = true };
+        var modifiedGameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the modified game base directory (WindowsNoEditor)") { IsRequired = true };
+        swapbgmCommand.AddOption(newbgmFile);
+        swapbgmCommand.AddOption(modifiedGameDir);
+        rootCommand.AddCommand(swapbgmCommand);
+        swapbgmCommand.SetHandler(SwapBgm.Command, newbgmFile, modifiedGameDir);
+
         var testCommand = new Command("test", "Test");
         testCommand.AddOption(trackDir);
         testCommand.AddOption(gameDir);
