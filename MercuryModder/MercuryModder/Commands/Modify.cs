@@ -19,7 +19,7 @@ public class Modify
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, , bool setRecommended)
+    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool setRecommended)
     {
         var songs = new List<Song>();
         foreach (var genre in GENRES)
