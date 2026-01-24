@@ -115,6 +115,7 @@ public class Check
         Console.WriteLine($"\tArtist: {song.Info.Artist}");
         Console.WriteLine($"\tBpm: {song.Info.Bpm}");
         Console.WriteLine($"\tGenre: {song.Info.Genre}");
+        Console.WriteLine($"\tPreview: {TimeSpan.FromSeconds(song.Info.PreviewStart):mm\\:ss}-{TimeSpan.FromSeconds(song.Info.PreviewStart + song.Info.PreviewLength):mm\\:ss}");
         if (!song.Normal.Dummy) Console.WriteLine($"\tChart Normal : {song.Normal.Entry.Level:00.00} - {song.Normal.Entry.NotesDesigner} ({song.Normal.FileName})");
         else Console.WriteLine($"\tChart Normal : Missing");
         if (!song.Hard.Dummy) Console.WriteLine($"\tChart Hard   : {song.Hard.Entry.Level:00.00} - {song.Hard.Entry.NotesDesigner} ({song.Hard.FileName})");

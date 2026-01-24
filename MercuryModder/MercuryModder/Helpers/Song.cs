@@ -181,8 +181,8 @@ public class Song
                 Artist = entry.Artist,
                 Rubi = entry.Reading,
                 Bpm = entry.BpmMessage,
-                PreviewStart = entry.PreviewBegin.Time,
-                PreviewLength = entry.PreviewEnd.Time - entry.PreviewBegin.Time
+                PreviewStart = entry.PreviewBegin.Time / 1000f,
+                PreviewLength = (entry.PreviewEnd.Time - entry.PreviewBegin.Time) / 1000f
             };
         }
     }
