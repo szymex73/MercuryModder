@@ -33,6 +33,7 @@ public class Program {
         var insertFirst = new Option<bool>(name: "--insert-first", description: "Whether to add the new tracks at the start of the list") { IsRequired = false };
         var printModified = new Option<bool>(name: "--print-modified", description: "Whether to print a list of files that will be modified") { IsRequired = false };
         var startId = new Option<int>(name: "--start-id", description: "What ID to start counting from when adding tracks") { IsRequired = false };
+        var setRecommended = new Option<bool>(name: "--recommend", description: "Whether to mark songs as recommended (including modified infernos)") { IsRequired = false };
         startId.SetDefaultValue(7001);
         modifyCommand.AddOption(trackDir);
         modifyCommand.AddOption(gameDir);
@@ -40,8 +41,9 @@ public class Program {
         modifyCommand.AddOption(insertFirst);
         modifyCommand.AddOption(printModified);
         modifyCommand.AddOption(startId);
+        modifyCommand.AddOption(setRecommended);
         rootCommand.AddCommand(modifyCommand);
-        modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId);
+        modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, setRecommended);
 
         var testCommand = new Command("test", "Test");
         testCommand.AddOption(trackDir);

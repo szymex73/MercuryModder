@@ -19,7 +19,7 @@ public class Modify
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId)
+    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, , bool setRecommended)
     {
         var songs = new List<Song>();
         foreach (var genre in GENRES)
@@ -110,8 +110,8 @@ public class Modify
 
             Console.WriteLine($"{songId:0000} | Processing {song.Info.Title}");
 
-            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId));
-            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId));
+            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, setRecommended));
+            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, setRecommended));
 
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
             if (song.Inferno != null) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
@@ -129,7 +129,6 @@ public class Modify
             files.Add($"Mercury/Content/UI/Textures/JACKET/{jacketFilename}.uasset");
 
             // TODO: Use audio file info from saturndata?
-            // TODO: Audio caching is kinda naive, change?
             byte[] hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track.wav");
             var hca = new HcaTrack(hcaBytes);
             awb.Add(new CriAfs2Entry
@@ -235,6 +234,7 @@ public class Modify
             (songEntry["NotesDesignerInferno"] as StrPropertyData).Value = FString.FromString(song.Inferno.Entry.NotesDesigner);
             (songEntry["DifficultyInfernoLv"] as FloatPropertyData).Value = (float)song.Inferno.Entry.Level;
             (songEntry["ClearNormaRateInferno"] as FloatPropertyData).Value = song.Inferno.Entry.ClearThreshold;
+            if (setRecommended) (songEntry["bRecommend"] as BoolPropertyData).Value = true;
             // Add UIT entry
             infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, infId));
 
@@ -310,7 +310,7 @@ public class Modify
         File.WriteAllBytes($"{trackDir}/songs.tsv", DiVEwallHelper.FormatTsv(diveOutput));
     }
 
-    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId)
+    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId, bool recommended = false)
     {
         return new StructPropertyData(FName.FromString(asset, $"{songId}"), FName.FromString(asset, "MusicParameterTableData"))
         {
@@ -341,7 +341,7 @@ public class Modify
                 new BoolPropertyData(FName.FromString(asset, "bValidCulture_Offline")) { Value = true },
                 new BoolPropertyData(FName.FromString(asset, "bValidCulture_NoneActive")) { Value = false },
 
-                new BoolPropertyData(FName.FromString(asset, "bRecommend")) { Value = true },
+                new BoolPropertyData(FName.FromString(asset, "bRecommend")) { Value = recommended },
 
                 new IntPropertyData(FName.FromString(asset, "WaccaPointCost")) { Value = 0 },
                 new BytePropertyData(FName.FromString(asset, "bCollaboration")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = 0 },
