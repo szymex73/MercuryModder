@@ -37,6 +37,33 @@ public class Modify
             }
         }
 
+        // Rearrange songs to be in ID order
+        var idStore = IDStore.ReadFromFile($"{trackDir}/song_ids.toml");
+        var songIdCounter = startId;
+        List<Tuple<int, Song>> sortedSongs = new List<Tuple<int, Song>>();
+        foreach (Song song in songs)
+        {
+            var songId = -1;
+            var songRelPath = song.GetRelativePath();
+
+            if (idStore.ContainsKey(songRelPath))
+            {
+                songId = idStore[songRelPath];
+            }
+            else
+            {
+                while (idStore.ContainsValue(songIdCounter)) songIdCounter += 1;
+                songId = songIdCounter;
+                idStore[songRelPath] = songId;
+                songIdCounter += 1;
+            }
+
+            if (songId == -1) throw new Exception($"Somehow songId was left at -1");
+
+            sortedSongs.Add(new Tuple<int, Song>(songId, song));
+        }
+        sortedSongs.Sort((a, b) => a.Item1.CompareTo(b.Item1));
+
         var files = new List<String>();
 
         var musicTablePath = $"{gameDir}/Mercury/Content/Table/MusicParameterTable.uasset";
@@ -86,27 +113,11 @@ public class Modify
         uint awbCounter = 0;
         var awbId = (uint)cueFile.AddAwb("MER_BGM_V73");
 
-        var idStore = IDStore.ReadFromFile($"{trackDir}/song_ids.toml");
         var diveOutput = new List<DiVEwallHelper.DiVEwallSongEntry>();
-        var songIdCounter = startId;
-        foreach (var song in songs)
+        foreach (var songTuple in sortedSongs)
         {
-            var songId = -1;
-            var songRelPath = song.GetRelativePath();
-
-            if (idStore.ContainsKey(songRelPath))
-            {
-                songId = idStore[songRelPath];
-            }
-            else
-            {
-                while (idStore.ContainsValue(songIdCounter)) songIdCounter += 1;
-                songId = songIdCounter;
-                idStore[songRelPath] = songId;
-                songIdCounter += 1;
-            }
-
-            if (songId == -1) throw new Exception($"Somehow songId was left at -1");
+            var songId = songTuple.Item1;
+            var song = songTuple.Item2;
 
             Console.WriteLine($"{songId:0000} | Processing {song.Info.Title}");
 
