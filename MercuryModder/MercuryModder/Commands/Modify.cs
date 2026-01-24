@@ -284,7 +284,9 @@ public class Modify
         awbFile.Close();
         files.Add("Mercury/Content/Sound/Bgm/MER_BGM_V73.awb");
 
-        var hash = MD5.HashData(File.ReadAllBytes($"{outputDir}/Mercury/Content/Sound/Bgm/MER_BGM_V73.awb"));
+        var awbStream = File.Open($"{outputDir}/Mercury/Content/Sound/Bgm/MER_BGM_V73.awb", FileMode.Open);
+        var hash = MD5.HashData(awbStream);
+        awbStream.Close();
         cueFile.SetAwbHash("MER_BGM_V73", hash);
         cueFile.SetAwbHeader((int)awbId, awb.Header);
 
