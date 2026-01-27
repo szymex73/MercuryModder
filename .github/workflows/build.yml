@@ -20,6 +20,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
+      
+      - id: previous_version
+        run: |
+          echo "previous-version=$(gh repo view --json latestRelease --jq '.latestRelease.tagName')" >> $GITHUB_OUTPUT
 
       - name: Build for Linux
         run: |
@@ -35,3 +39,7 @@ jobs:
         uses: ncipollo/release-action@v1.20.0
         with:
           artifacts: "MercuryModder-linux-x64.zip, MercuryModder-windows-x64.zip"
+          generateReleaseNotes: true
+          generateReleaseNotesPreviousTag: ${{ steps.previous_version.outputs.previous-version }}
+          makeLatest: true
+
