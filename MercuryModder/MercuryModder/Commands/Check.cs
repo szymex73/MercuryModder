@@ -48,6 +48,11 @@ public class Check
                         if (printInfo) PrintSong(song);
                     }
                 }
+                catch (ExceptionList e)
+                {
+                    Console.WriteLine(e);
+                    Console.WriteLine($"[FAIL] SaturnData errored while loading song from {songDir}, see System.Exception lines above");
+                }
                 catch (Exception e)
                 {
                     Console.WriteLine($"[FAIL] Errored while loading song from {songDir}");
