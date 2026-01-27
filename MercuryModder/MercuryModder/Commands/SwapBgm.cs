@@ -33,7 +33,7 @@ public class SwapBgm
         awb.Add(new CriAfs2Entry
         {
             Id = 0,
-            FilePath = new FileInfo($"{newbgmFile.Directory.FullName}/track.hca")
+            FilePath = new FileInfo(Path.ChangeExtension(newbgmFile.FullName, "hca"))
         });
         var spkId = cueFile.AddTrack(0, awbId, hca.NumSamples, false);
         var hdpId = cueFile.AddTrack(0, awbId, hca.NumSamples, true);
