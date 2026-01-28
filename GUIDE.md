@@ -1,4 +1,7 @@
 # Usage Guide
+> [!CAUTION]
+> If you're not running the game offline, and are not hosting your own server, make sure your network op allows for custom songs to be used on their network.
+
 First prepare the folder structure for the custom songs, there's a subcommand to make it easier
 ```
 $ MercuryModder prepare --tracks ./custom_tracks/
@@ -18,10 +21,10 @@ custom_tracks
     |-track.wav
   |-Song2 // Example song with just .sat
     |-jacket.png
-    |-0_normal.sat
-    |-1_hard.sat
-    |-2_expert.sat
-    |-3_inferno.sat
+    |-normal.sat
+    |-hard.sat
+    |-expert.sat
+    |-inferno.sat
     |-track.wav
   |-Song3 // Example song with only the expert diff in .mer
     |-meta.toml
@@ -45,7 +48,7 @@ custom_tracks
   |-Song5
 |-Inferno // Separate dir for Inferno diffs on existing songs
   |-1002 // ID of an existing song
-    |-3_inferno.sat
+    |-inferno.sat
     |-track.wav // Optional, only if a different audio cut is used
   |-1003
     |-inferno.mer
@@ -136,6 +139,8 @@ $ MercuryModder check --tracks ./custom_tracks/ --info
         [E] Song artist is not defined
 [...]
 ```
+> [!IMPORTANT]
+> Watch out for any lines with `[FAIL]` and `[E]`, as these are things that need to be fixed before you can proceed.
 
 If all songs pass with `OK` or `WARN`, modification can be performed:
 ```
