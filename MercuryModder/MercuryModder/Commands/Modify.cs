@@ -119,7 +119,7 @@ public class Modify
             var songId = songTuple.Item1;
             var song = songTuple.Item2;
 
-            Console.WriteLine($"{songId:0000} | Processing {song.Info.Title}");
+            Console.WriteLine($"{songId:0000} | Processing {song.Info.Title} ({song.Info.Genre})");
 
             if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, setRecommended));
             else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, setRecommended));
