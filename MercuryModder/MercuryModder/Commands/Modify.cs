@@ -125,7 +125,7 @@ public class Modify
             else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, setRecommended));
 
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
-            if (song.Inferno != null) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
+            if (!song.Inferno.Dummy) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
 
             var jacketDir = $"{outputDir}/Mercury/Content/UI/Textures/JACKET/S{songId / 1000:00}";
             if (!Directory.Exists(jacketDir)) Directory.CreateDirectory(jacketDir);
@@ -155,7 +155,7 @@ public class Modify
 
             string infCue = $"MER_BGM_S{songId:00_000}";
 
-            if (File.Exists($"{song.Directory}/track-inferno.wav"))
+            if (!song.Inferno.Dummy && File.Exists($"{song.Directory}/track-inferno.wav"))
             {
                 // Take care of an inf audio cut if one is provided
                 hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track-inferno.wav");
@@ -189,9 +189,11 @@ public class Modify
             song.Expert.Entry.AudioFile = $"MER_BGM_S{songId:00_000}";
             NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_02.mer", song.Expert.Entry, song.Expert.Chart, nwa);
             files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_02.mer");
-            song.Inferno.Entry.AudioFile = infCue;
-            NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_03.mer", song.Inferno.Entry, song.Inferno.Chart, nwa);
-            files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_03.mer");
+            if (!song.Inferno.Dummy) {
+                song.Inferno.Entry.AudioFile = infCue;
+                NotationSerializer.ToFile($"{chartOutDirectory}/S{songId:00-000}_03.mer", song.Inferno.Entry, song.Inferno.Chart, nwa);
+                files.Add($"/Mercury/Content/MusicData/S{songId:00-000}/S{songId:00-000}_03.mer");
+            }
 
             diveOutput.Add(new DiVEwallHelper.DiVEwallSongEntry()
             {
