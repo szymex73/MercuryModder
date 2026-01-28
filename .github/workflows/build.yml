@@ -24,6 +24,8 @@ jobs:
       - id: previous_version
         run: |
           echo "previous-version=$(gh repo view --json latestRelease --jq '.latestRelease.tagName')" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Build for Linux
         run: |
