@@ -204,9 +204,13 @@ public class Modify
                 bpm = song.Info.Bpm,
                 // The game needs N/H/E to be above 0, but DiVEwall can handle it being empty for dummy diffs
                 diffNormal = song.Normal.Dummy ? 0f : (float)song.Normal.Entry.Level,
+                diffNormalDesigner = song.Normal.Dummy ? "" : song.Normal.Entry.NotesDesigner,
                 diffHard = song.Hard.Dummy ? 0f : (float)song.Hard.Entry.Level,
+                diffHardDesigner = song.Hard.Dummy ? "" : song.Hard.Entry.NotesDesigner,
                 diffExpert = song.Expert.Dummy ? 0f : (float)song.Expert.Entry.Level,
+                diffExpertDesigner = song.Expert.Dummy ? "" : song.Expert.Entry.NotesDesigner,
                 diffInferno = song.Inferno.Dummy ? 0f : (float)song.Inferno.Entry.Level,
+                diffInfernoDesigner = song.Inferno.Dummy ? "" : song.Inferno.Entry.NotesDesigner,
                 verAdded = 40000, // Hardcoded as "4.00.00"
                 verRemoved = 0,
                 infAdded = song.Inferno.Dummy ? 0 : 40000, // Hardcoded to be above Reverse if Inf is provided
@@ -272,9 +276,13 @@ public class Modify
                 version = (songEntry["VersionNo"] as UInt32PropertyData).Value,
                 bpm = (songEntry["Bpm"] as StrPropertyData).Value.ToString(),
                 diffNormal = (songEntry["DifficultyNormalLv"] as FloatPropertyData).Value,
+                diffNormalDesigner = (songEntry["NotesDesignerNormal"] as StrPropertyData).Value.ToString(),
                 diffHard = (songEntry["DifficultyHardLv"] as FloatPropertyData).Value,
+                diffHardDesigner = (songEntry["NotesDesignerHard"] as StrPropertyData).Value.ToString(),
                 diffExpert = (songEntry["DifficultyExtremeLv"] as FloatPropertyData).Value,
+                diffExpertDesigner = (songEntry["NotesDesignerExpert"] as StrPropertyData).Value.ToString(),
                 diffInferno = (songEntry["DifficultyInfernoLv"] as FloatPropertyData).Value,
+                diffInfernoDesigner = (songEntry["NotesDesignerInferno"] as StrPropertyData).Value.ToString(),
                 verAdded = 0, // TODO: Figure out what should be here w/ yellow
                 verRemoved = 0,
                 infAdded = 40000,
