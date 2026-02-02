@@ -146,26 +146,42 @@ public class Check
         if (song.Info.Genre is null) probs.Add("Genre is not defined");
         if (song.Info.Genre == "" || Array.IndexOf(GENRES, song.Info.Genre) == -1) probs.Add($"Invalid genre {song.Info.Genre}");
 
-        if (!File.Exists(Path.Join(song.Directory.ToString(), "jacket.png"))) probs.Add("jacket.png is missing");
-        // Add size checks?
+        if (!File.Exists(Path.Join(song.Directory.ToString(), "jacket.png")))
+        {
+            probs.Add("jacket.png is missing");
+        } else {
+            var image = SKImage.FromEncodedData($"{song.Directory}/jacket.png");
+            if (image.Width != image.Height) warns.Add("Jacket is not square");
+            if (image.Width != 256 && image.Width != 512) warns.Add("Jacket is not 256x256 or 512x512");
+        }
 
         if (!File.Exists(Path.Join(song.Directory.ToString(), "track.wav"))) probs.Add("track.wav is missing");
 
         if (song.Normal.Dummy) warns.Add("Normal diff was not provided");
         if (song.Hard.Dummy) warns.Add("Hard diff was not provided");
         if (song.Expert.Dummy) warns.Add("Expert diff was not provided");
-        // if (song.Inferno.Dummy) warns.Add("Inferno diff was not provided"); // Causes a bunch of spam, and it's not necessary
         if (song.Normal.Dummy && song.Hard.Dummy && song.Expert.Dummy && song.Inferno.Dummy) probs.Add("No chart was provided");
 
-        if (song.Normal.Entry.NotesDesigner == "") warns.Add("Normal diff note designer is empty");
-        if (song.Hard.Entry.NotesDesigner == "") warns.Add("Hard diff note designer is empty");
-        if (song.Expert.Entry.NotesDesigner == "") warns.Add("Expert diff note designer is empty");
-        if (song.Inferno.Entry.NotesDesigner == "") warns.Add("Inferno diff note designer is empty");
+        var diffs = new List<Song.ChartContainer>()
+        {
+            song.Normal,
+            song.Hard,
+            song.Expert,
+            song.Inferno,
+        };
+        foreach (var diff in diffs)
+        {
+            if (diff.Dummy) continue; // Don't print warnings about dummy diffs
 
-        if (song.Normal.Entry.Level == 0f) warns.Add("Normal diff has level set to 0");
-        if (song.Hard.Entry.Level == 0f) warns.Add("Hard diff has level set to 0");
-        if (song.Expert.Entry.Level == 0f) warns.Add("Expert diff has level set to 0");
-        if (!song.Inferno.Dummy && song.Inferno.Entry.Level == 0f) warns.Add("Inferno diff has level set to 0");
+            if (diff.Entry.NotesDesigner == "") warns.Add($"{diff.Entry.Difficulty} note designer is empty");
+            if (diff.Entry.Level == 0f) warns.Add($"{diff.Entry.Difficulty} has level set to 0 (can make the song not show up)");
+
+            if (
+                (0f < diff.Entry.Level && diff.Entry.Level < 1f) ||
+                (14.65f <= diff.Entry.Level && diff.Entry.Level < 15f) ||
+                (15.65f <= diff.Entry.Level)
+            ) warns.Add($"{diff.Entry.Difficulty} has level set to {diff.Entry.Level:00.00} which *will* crash the game unless patched");
+        }
 
         problems = probs.ToArray();
         warnings = warns.ToArray();
