@@ -37,11 +37,17 @@ jobs:
           dotnet publish MercuryModder --runtime win-x64 -o "./builds/MercuryModder-windows-x64"
           zip -r "MercuryModder-windows-x64.zip" "./builds/MercuryModder-windows-x64"
 
+      - name: Generate release info
+        run: |
+          git fetch --tags --force
+          TAG=$(git tag --contains $(git rev-parse HEAD))
+          PREV_TAG=$(git describe --tags --abbrev=0 $TAG^)
+          TAG_BODY=$(git log --pretty=reference $PREV_TAG...$TAG)
+          echo "$TAG_BODY" > body.md
+
       - name: Create Release
         uses: ncipollo/release-action@v1.20.0
         with:
           artifacts: "MercuryModder-linux-x64.zip, MercuryModder-windows-x64.zip"
-          generateReleaseNotes: true
-          generateReleaseNotesPreviousTag: ${{ steps.previous_version.outputs.previous-version }}
+          bodyFile: "body.md"
           makeLatest: true
-
