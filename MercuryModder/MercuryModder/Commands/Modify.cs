@@ -19,7 +19,7 @@ public class Modify
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool setRecommended)
+    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool setRecommended, uint gameVersion)
     {
         var songs = new List<Song>();
         foreach (var genre in GENRES)
@@ -121,8 +121,8 @@ public class Modify
 
             Console.WriteLine($"{songId:0000} | Processing {song.Info.Title} ({song.Info.Genre})");
 
-            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, setRecommended));
-            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, setRecommended));
+            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, gameVersion, setRecommended));
+            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, gameVersion, setRecommended));
 
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
             if (!song.Inferno.Dummy) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
@@ -336,7 +336,7 @@ public class Modify
         File.WriteAllBytes($"{trackDir}/songs.tsv", DiVEwallHelper.FormatTsv(diveOutput));
     }
 
-    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId, bool recommended = false)
+    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId, uint gameVersion, bool recommended = false)
     {
         return new StructPropertyData(FName.FromString(asset, $"{songId}"), FName.FromString(asset, "MusicParameterTableData"))
         {
@@ -346,7 +346,7 @@ public class Modify
                 new StrPropertyData(FName.FromString(asset, "MusicMessage")) { Value = FString.FromString(song.Info.Title) },
                 new StrPropertyData(FName.FromString(asset, "ArtistMessage")) { Value = FString.FromString(song.Info.Artist) },
                 new StrPropertyData(FName.FromString(asset, "CopyrightMessage")) { Value = FString.FromString("-") },
-                new UInt32PropertyData(FName.FromString(asset, "VersionNo")) { Value = 3 }, // Hardcode to be sorted into Reverse
+                new UInt32PropertyData(FName.FromString(asset, "VersionNo")) { Value = gameVersion },
                 new StrPropertyData(FName.FromString(asset, "AssetDirectory")) { Value = FString.FromString($"S{songId:00-000}") },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetName")) { Value = FString.FromString("-") },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetNameHard")) { Value = null },

@@ -34,7 +34,9 @@ public class Program {
         var printModified = new Option<bool>(name: "--print-modified", description: "Whether to print a list of files that will be modified") { IsRequired = false };
         var startId = new Option<int>(name: "--start-id", description: "What ID to start counting from when adding tracks") { IsRequired = false };
         var setRecommended = new Option<bool>(name: "--recommend", description: "Whether to mark songs as recommended (including modified infernos)") { IsRequired = false };
+        var gameVersion = new Option<uint>(name: "--version", description: "What game version to assign the songs to (defaults to Reverse)") { IsRequired = false };
         startId.SetDefaultValue(7001);
+        gameVersion.SetDefaultValue(5);
         modifyCommand.AddOption(trackDir);
         modifyCommand.AddOption(gameDir);
         modifyCommand.AddOption(outputDir);
@@ -43,7 +45,7 @@ public class Program {
         modifyCommand.AddOption(startId);
         modifyCommand.AddOption(setRecommended);
         rootCommand.AddCommand(modifyCommand);
-        modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, setRecommended);
+        modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, setRecommended, gameVersion);
 
         var swapbgmCommand = new Command("swapbgm", "Swap attract BGM (don't use)");
         var newbgmFile = new Option<FileInfo>(name: "--newbgm", description: "Path to a .wav file to be used as the new bgm") { IsRequired = true };
