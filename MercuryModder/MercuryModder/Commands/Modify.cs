@@ -316,6 +316,9 @@ public class Modify
         // Just increasing by +10 flat for now, it slightly increases memory usage but w/e
         var DefaultEngine = File.ReadAllText($"{gameDir}/Mercury/Config/DefaultEngine.ini");
         DefaultEngine = DefaultEngine.Replace("MaxBinds=31", "MaxBinds=41");
+        // Make the game work if swapbgm gets used
+        DefaultEngine = DefaultEngine.Replace("NumBinders=16", "NumBinders=17");
+        DefaultEngine = DefaultEngine.Replace("NumLoaders=16", "NumLoaders=17");
         Directory.CreateDirectory($"{outputDir}/Mercury/Config/");
         File.WriteAllText($"{outputDir}/Mercury/Config/DefaultEngine.ini", DefaultEngine);
         files.Add("Mercury/Config/DefaultEngine.ini");
