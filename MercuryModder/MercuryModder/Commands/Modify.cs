@@ -25,6 +25,11 @@ public class Modify
         foreach (var genre in GENRES)
         {
             var genreDir = Path.Combine(trackDir.ToString(), genre);
+            if (!Directory.Exists(genreDir))
+            {
+                Console.WriteLine($"Directory {genre} does not exist, skipping...");
+            }
+
             foreach (var songDir in Directory.GetDirectories(genreDir))
             {
                 var song = Song.Load(songDir);
@@ -74,18 +79,25 @@ public class Modify
         files.Add("Mercury/Content/Table/MusicParameterTable.uexp");
 
         var infernos = new List<Song>();
-        foreach (var songDir in Directory.GetDirectories(Path.Combine(trackDir.ToString(), "Inferno")))
+        var infernoDir = Path.Combine(trackDir.ToString(), "Inferno");
+        if (Directory.Exists(infernoDir))
         {
-            var song = Song.Load(songDir);
-            int infId = Convert.ToInt32(song.Directory.Name);
-            if (!Check.CheckInferno(song, out var problems, out var warnings))
+            foreach (var songDir in Directory.GetDirectories(infernoDir))
             {
-                // Only fail if problems were found, skip warnings
-                if (problems.Length != 0) throw new Exception($"Found problems when loading {songDir} Inferno. Please run \"MercuryMapper check\" first.");
+                var song = Song.Load(songDir);
+                int infId = Convert.ToInt32(song.Directory.Name);
+                if (!Check.CheckInferno(song, out var problems, out var warnings))
+                {
+                    // Only fail if problems were found, skip warnings
+                    if (problems.Length != 0) throw new Exception($"Found problems when loading {songDir} Inferno. Please run \"MercuryMapper check\" first.");
+                }
+                var mpt = musicParameterTable.Table.Data.Find(mpt => mpt.Name.ToString() == $"{infId}");
+                if (mpt == null) throw new Exception($"Inferno for {infId} does not have a track in the original MPT!");
+                infernos.Add(song);
             }
-            var mpt = musicParameterTable.Table.Data.Find(mpt => mpt.Name.ToString() == $"{infId}");
-            if (mpt == null) throw new Exception($"Inferno for {infId} does not have a track in the original MPT!");
-            infernos.Add(song);
+        } else
+        {
+            Console.WriteLine("No Inferno directory present, skipping injecting infernos...");
         }
 
         var unlockTablePath = $"{gameDir}/Mercury/Content/Table/UnlockMusicTable.uasset";
