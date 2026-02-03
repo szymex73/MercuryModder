@@ -33,8 +33,9 @@ public class Song
 
         var merFiles = songDirectory.GetFiles("*.mer");
         var satFiles = songDirectory.GetFiles("*.sat");
+        satFiles.Concat(songDirectory.GetFiles("*.map"));
 
-        if (merFiles.Length != 0 && satFiles.Length != 0) throw new Exception("Song directory can only contain .sat files or .mer files, not both");
+        if (merFiles.Length != 0 && satFiles.Length != 0) throw new Exception("Song directory can only contain .sat/.map or .mer files, not both");
 
         if (merFiles.Length != 0) return LoadMer(songDirectory);
         if (satFiles.Length != 0) return LoadSat(songDirectory);
@@ -51,7 +52,9 @@ public class Song
         ChartContainer expert = ChartContainer.GetDummy(1f);
         ChartContainer inferno = ChartContainer.GetDummy(0f);
 
-        foreach (var file in songDirectory.GetFiles("*.sat").OrderBy(f => f.FullName))
+        var files = songDirectory.GetFiles("*.sat");
+        files.Concat(songDirectory.GetFiles("*.map"));
+        foreach (var file in files.OrderBy(f => f.FullName))
         {
             var cc = new ChartContainer(file.FullName, nra);
             
