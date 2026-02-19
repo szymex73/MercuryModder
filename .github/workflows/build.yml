@@ -30,7 +30,7 @@ jobs:
       - name: Build for Linux
         run: |
           VER=$(git tag --contains $(git rev-parse HEAD)|tr -d v)
-          dotnet publish MercuryModder -p:Version=$VER--runtime linux-x64 -o "./builds/MercuryModder-linux-x64"
+          dotnet publish MercuryModder -p:Version=$VER --runtime linux-x64 -o "./builds/MercuryModder-linux-x64"
           zip -r "MercuryModder-linux-x64.zip" "./builds/MercuryModder-linux-x64"
       
       - name: Build for Windows
