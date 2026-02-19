@@ -22,9 +22,49 @@ public class Texture2DAsset
 
     private SKBitmap GetBitmapFromAsset()
     {
-        // TODO: at some point it would be nice to
-        // also extract textures from existing assets
-        return new SKBitmap();
+        byte[] data = Export.Extras;
+        MemoryStream stream = new MemoryStream(data);
+        BinaryReader reader = new BinaryReader(stream);
+
+        reader.ReadBytes(16); // FTexture2D Header
+        reader.ReadUInt32(); // Platform data size
+        reader.ReadInt32(); // SizeX
+        reader.ReadInt32(); // SizeY
+        reader.ReadInt32(); // NumSlices
+        string format = FStringHelper.Read(reader);
+        if (format != "PF_B8G8R8A8") throw new Exception($"Extracting bitmaps from assets with the format of {format} is not supported");
+        reader.ReadInt32(); // FirstMip
+        reader.ReadInt32(); // ?
+        reader.ReadInt32(); // ?
+        reader.ReadInt32(); // BulkByteFlags
+        int pixelArrSize = reader.ReadInt32();
+        reader.ReadInt32(); // Above again
+        reader.ReadUInt64(); // ContainerOffset
+        byte[] pixels = reader.ReadBytes(pixelArrSize);
+
+        int width = reader.ReadInt32();
+        int height = reader.ReadInt32();
+
+        SKBitmap bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+
+        unsafe
+        {
+            byte* ptr = (byte*)bitmap.GetPixels();
+            int i = 0;
+            for (int y = 0; y < bitmap.Height; y++)
+            {
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    *(ptr + 0) = pixels[i++];
+                    *(ptr + 1) = pixels[i++];
+                    *(ptr + 2) = pixels[i++];
+                    *(ptr + 3) = pixels[i++];
+                    ptr += 4;
+                }
+            }
+        }
+
+        return bitmap;
     }
 
     public void SetBitmap(SKBitmap bitmap)

@@ -26,6 +26,12 @@ public class AcbAsset
     public CriTable StreamAwbTable;
     public CriTable StreamAwbHeadersTable;
 
+    private Dictionary<string, ushort> cueNames = new();
+    private Dictionary<ushort, Cue> cues = new();
+    private Dictionary<ushort, Track> tracks = new();
+
+    public bool IsInline = false;
+
     private uint lastCueID;
 
     public AcbAsset(string path)
@@ -64,11 +70,36 @@ public class AcbAsset
         TrackTable.Fields["TargetName"].DefaultValue = "";
         TrackTable.Fields["TargetAcbName"].DefaultValue = "";
 
+        for (int i = 0; i < CueNameTable.Rows.Count; i++)
+        {
+            var nameRow = CueNameTable.Rows[i];
+            cueNames[nameRow.GetValue<string>("CueName")] = nameRow.GetValue<ushort>("CueIndex");
+        }
+
         for (int i = 0; i < CueTable.Rows.Count; i++)
         {
-            var cueId = CueTable.Rows[i].GetValue<uint>("CueId");
+            var cueRow = CueTable.Rows[i];
+            cues[(ushort) i] = Cue.FromRow(this, cueRow, (ushort) i);
+
+            var cueId = cueRow.GetValue<uint>("CueId");
             if (cueId > lastCueID) lastCueID = cueId;
         }
+
+        for (int i = 0; i < TrackTable.Rows.Count; i++)
+        {
+            var trackRow = TrackTable.Rows[i];
+            tracks[(ushort) i] = Track.FromRow(this, trackRow);
+        }
+    }
+
+    public Cue GetCue(string name)
+    {
+        return cues[cueNames[name]];
+    }
+
+    public Track GetTrack(ushort id)
+    {
+        return tracks[id];
     }
 
     public int AddAwb(string name)
@@ -231,5 +262,82 @@ class CueNameComparer : Comparer<CriRow>
         var yName = y.GetValue<string>("CueName");
 
         return xName.CompareTo(yName);
+    }
+}
+
+public class Cue
+{
+    public uint ID { get; set; }
+    public string Name { get; set; }
+    public ushort[] TrackIds { get; set; }
+
+    private CriRow row;
+    private AcbAsset parent;
+
+    public static Cue FromRow(AcbAsset asset, CriRow row, ushort id)
+    {
+        string name = asset.CueNameTable.Rows.FirstOrDefault(row => row.GetValue<ushort>("CueIndex") == id).GetValue<string>("CueName");
+
+        ushort synthId = row.GetValue<ushort>("ReferenceIndex");
+        CriRow sequenceRow = asset.SequenceTable.Rows[synthId];
+        
+        var tracksBuf = sequenceRow.GetValue<byte[]>("TrackIndex");
+        ushort[] tracks = new ushort[tracksBuf.Length / 2];
+        for (int i = 0; i < tracksBuf.Length; i += 2)
+        {
+            tracks[i / 2] = (ushort) (tracksBuf[1] | (tracksBuf[0] << 8));
+        }
+
+        return new Cue() {
+            ID = row.GetValue<uint>("CueId"),
+            Name = name,
+            TrackIds = tracks,
+
+            row = row,
+            parent = asset,
+        };
+    }
+
+    public override string ToString()
+    {
+        return $"Cue(ID={ID}, Name=\"{Name}\", Tracks={TrackIds})";
+    }
+}
+
+public class Track
+{
+    public ushort StreamAwbPortNo {get; set; }
+    public ushort StreamAwbId {get; set; }
+
+    private CriRow row;
+    private AcbAsset parent;
+
+    public static Track FromRow(AcbAsset asset, CriRow row)
+    {
+        var eventRow = asset.TrackEventTable.Rows[row.GetValue<ushort>("EventIndex")];
+        byte[] command = eventRow.GetValue<byte[]>("Command");
+
+        // __Very__ naive, assumes that all cues will have the same pattern of commands
+        // to extract the ID of the synth played in the given track
+        // Also ignores the fact that multiple synths can be played in a single track
+        ushort synthId = (ushort) (command[6] | (command[5] << 8));
+        var synthRow = asset.SynthTable.Rows[synthId];
+        byte[] synthRefs = synthRow.GetValue<byte[]>("ReferenceItems");
+
+        ushort waveformId = (ushort) (synthRefs[3] | (synthRefs[2] << 8));
+        var waveformRow = asset.WaveformTable.Rows[waveformId];
+
+        return new Track() {
+            StreamAwbPortNo = waveformRow.GetValue<ushort>("StreamAwbPortNo"),
+            StreamAwbId = waveformRow.GetValue<ushort>("StreamAwbId"),
+
+            row = row,
+            parent = asset,
+        };
+    }
+
+    public override string ToString()
+    {
+        return $"Track(StreamAwbPortNo={StreamAwbPortNo}, StreamAwbId={StreamAwbId})";
     }
 }
