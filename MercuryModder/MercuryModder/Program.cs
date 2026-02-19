@@ -73,5 +73,6 @@ public class Program {
     {
         Console.WriteLine("Unhandled exception");
         Console.WriteLine(e);
+        Environment.Exit(-1);
     }
 }
