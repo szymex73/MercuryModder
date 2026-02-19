@@ -104,9 +104,13 @@ public class Song
         ChartContainer expert = ChartContainer.GetDummy(1f);
         ChartContainer inferno = ChartContainer.GetDummy(0f);
         if (File.Exists($"{songDirectory}/normal.mer")) normal = new ChartContainer($"{songDirectory}/normal.mer", nra);
+        if (File.Exists($"{songDirectory}/0.mer")) normal = new ChartContainer($"{songDirectory}/0.mer", nra);
         if (File.Exists($"{songDirectory}/hard.mer")) hard = new ChartContainer($"{songDirectory}/hard.mer", nra);
+        if (File.Exists($"{songDirectory}/1.mer")) hard = new ChartContainer($"{songDirectory}/1.mer", nra);
         if (File.Exists($"{songDirectory}/expert.mer")) expert = new ChartContainer($"{songDirectory}/expert.mer", nra);
+        if (File.Exists($"{songDirectory}/2.mer")) expert = new ChartContainer($"{songDirectory}/2.mer", nra);
         if (File.Exists($"{songDirectory}/inferno.mer")) inferno = new ChartContainer($"{songDirectory}/inferno.mer", nra);
+        if (File.Exists($"{songDirectory}/3.mer")) inferno = new ChartContainer($"{songDirectory}/3.mer", nra);
 
         meta.Genre = songDirectory.Parent.Name;
 
