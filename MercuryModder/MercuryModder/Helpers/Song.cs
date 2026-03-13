@@ -33,7 +33,7 @@ public class Song
 
         var merFiles = songDirectory.GetFiles("*.mer");
         var satFiles = songDirectory.GetFiles("*.sat");
-        satFiles.Concat(songDirectory.GetFiles("*.map"));
+        satFiles = satFiles.Concat(songDirectory.GetFiles("*.map")).ToArray();
 
         if (merFiles.Length != 0 && satFiles.Length != 0) throw new Exception("Song directory can only contain .sat/.map or .mer files, not both");
 
@@ -53,7 +53,7 @@ public class Song
         ChartContainer inferno = ChartContainer.GetDummy(0f);
 
         var files = songDirectory.GetFiles("*.sat");
-        files.Concat(songDirectory.GetFiles("*.map"));
+        files = files.Concat(songDirectory.GetFiles("*.map")).ToArray();
         foreach (var file in files.OrderBy(f => f.FullName))
         {
             var cc = new ChartContainer(file.FullName, nra);
