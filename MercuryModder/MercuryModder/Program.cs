@@ -44,6 +44,7 @@ public class Program {
         modifyCommand.AddOption(printModified);
         modifyCommand.AddOption(startId);
         modifyCommand.AddOption(setRecommended);
+        modifyCommand.AddOption(gameVersion);
         rootCommand.AddCommand(modifyCommand);
         modifyCommand.SetHandler(Modify.Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, setRecommended, gameVersion);
 
