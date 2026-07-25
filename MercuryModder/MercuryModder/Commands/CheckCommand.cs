@@ -1,10 +1,25 @@
+using System.CommandLine;
 using MercuryModder.Helpers;
 using SkiaSharp;
 
 namespace MercuryModder.Commands;
 
-public class Check
+public class CheckCommand : ICommand
 {
+    public Command Build()
+    {
+        var cmd = new Command("check", "Go through the custom tracks and ensure the files are correct.");
+        
+        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
+        var info = new Option<bool>(name: "--info", description: "Whether to print song information") { IsRequired = false };
+        
+        cmd.AddOption(trackDir);
+        cmd.AddOption(info);
+        cmd.SetHandler(Command, trackDir, info);
+        
+        return cmd;
+    }
+
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 

@@ -25,6 +25,7 @@ public class AcbAsset
     public CriTable CueNameTable;
     public CriTable StreamAwbTable;
     public CriTable StreamAwbHeadersTable;
+    public CriTable WaveformExtensionDataTable;
 
     private Dictionary<string, ushort> cueNames = new();
     private Dictionary<ushort, Cue> cues = new();
@@ -64,6 +65,8 @@ public class AcbAsset
         StreamAwbTable.Load(MainTable.Rows[0]["StreamAwbHash"] as byte[]);
         StreamAwbHeadersTable = new CriTable();
         StreamAwbHeadersTable.Load(MainTable.Rows[0]["StreamAwbAfs2Header"] as byte[]);
+        WaveformExtensionDataTable = new CriTable();
+        WaveformExtensionDataTable.Load(MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[]);
 
         CueTable.Fields["UserData"].DefaultValue = "";
         SynthTable.Fields["VoiceLimitGroupName"].DefaultValue = "";
@@ -135,13 +138,13 @@ public class AcbAsset
         row["Header"] = header;
     }
 
-    public int AddTrack(uint streamAwbId, uint streamAwbPortNo, int sampleCount, bool headphoneTrack)
+    public int AddTrack(uint streamAwbId, uint streamAwbPortNo, int sampleCount, bool headphoneTrack, int loopFlag = 1, int extData = 65535)
     {
         var waveform = WaveformTable.NewRow();
         waveform["NumChannels"] = (byte)2;
-        waveform["LoopFlag"] = (byte)1;
+        waveform["LoopFlag"] = (byte)loopFlag;
         waveform["NumSamples"] = (uint)sampleCount;
-        waveform["ExtensionData"] = (ushort)65535;
+        waveform["ExtensionData"] = (ushort)extData;
         waveform["StreamAwbPortNo"] = (ushort)streamAwbPortNo;
         waveform["StreamAwbId"] = (ushort)streamAwbId;
         WaveformTable.Rows.Add(waveform);
@@ -222,6 +225,7 @@ public class AcbAsset
         MainTable.Rows[0]["CueNameTable"] = CueNameTable.Save();
         MainTable.Rows[0]["StreamAwbHash"] = StreamAwbTable.Save();
         MainTable.Rows[0]["StreamAwbAfs2Header"] = StreamAwbHeadersTable.Save();
+        MainTable.Rows[0]["WaveformExtensionData"] = WaveformExtensionDataTable.Save();
 
         // Extend AwbTocWork, seems to be used as some internal scratch buffer in memory after loading? (lol)
         // var tocWork = MainTable.Rows[0]["StreamAwbTocWork"] as byte[];
@@ -233,9 +237,9 @@ public class AcbAsset
         return MainTable.Save();
     }
 
-    public void Save(string path)
+    public void Save(string path, byte[] content = null)
     {
-        var acbContent = GetCueFile();
+        var acbContent = content != null ? content : GetCueFile();
 
         // Add prefix necessary for the asset
         List<byte> acbExtra = new List<byte>();

@@ -1,3 +1,4 @@
+using System.CommandLine;
 using System.Security.Cryptography;
 using System.Text;
 using MercuryModder.Assets;
@@ -14,10 +15,26 @@ using UAssetAPI.UnrealTypes;
 
 namespace MercuryModder.Commands;
 
-public class SwapBgm
+public class SwapBgmCommand : ICommand
 {
+    public Command Build()
+    {
+        var cmd = new Command("swapbgm", "Swap attract BGM (don't use)");
+        
+        var newbgmFile = new Option<FileInfo>(name: "--newbgm", description: "Path to a .wav file to be used as the new bgm") { IsRequired = true };
+        var modifiedGameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the modified game base directory (WindowsNoEditor)") { IsRequired = true };
+        
+        cmd.AddOption(newbgmFile);
+        cmd.AddOption(modifiedGameDir);
+        cmd.SetHandler(Command, newbgmFile, modifiedGameDir);
+        
+        return cmd;
+    }
+
     public static void Command(FileInfo newbgmFile, DirectoryInfo gameDir)
     {
+        Console.WriteLine("This will get removed at some point, please move to using the audioswap command instead.");
+
         if (!newbgmFile.Exists)
         {
             Console.WriteLine($"New bgm file {newbgmFile} does not exist");
@@ -28,7 +45,7 @@ public class SwapBgm
         CriAfs2Archive awb = new CriAfs2Archive();
         var awbId = (uint)cueFile.AddAwb("MER_BGM_V74");
 
-        byte[] hcaBytes = GetHCAFromWAVFile(newbgmFile.FullName);
+        byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile(newbgmFile.FullName);
         var hca = new HcaTrack(hcaBytes);
         awb.Add(new CriAfs2Entry
         {
@@ -74,39 +91,5 @@ public class SwapBgm
         cueFile.SetAwbHeader((int)awbId, awb.Header);
 
         cueFile.Save($"{gameDir}/Mercury/Content/Sound/Bgm/MER_BGM.uasset");
-    }
-
-    private static byte[] GetHCAFromWAVFile(string wavPath)
-    {
-        string hcaPath = Path.ChangeExtension(wavPath, "hca");
-        if (!File.Exists(wavPath))
-        {
-            var wavBytes = File.ReadAllBytes(wavPath);
-            byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, false);
-            File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
-            File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
-
-            return hcaBytes;
-        }
-        else
-        {
-            DateTime wavMtime = File.GetLastWriteTime(wavPath);
-            DateTime hcaMtime = File.GetLastWriteTime(hcaPath);
-
-            if (wavMtime != hcaMtime)
-            {
-                var wavBytes = File.ReadAllBytes(wavPath);
-                byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, false);
-                File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
-                File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
-
-                return hcaBytes;
-            }
-            else
-            {
-                // Same mtime so we can use the cached file
-                return File.ReadAllBytes(hcaPath);
-            }
-        }
     }
 }

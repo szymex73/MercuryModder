@@ -1,7 +1,21 @@
+using System.CommandLine;
+
 namespace MercuryModder.Commands;
 
-public class Prepare
+public class PrepareCommand : ICommand
 {
+    public Command Build()
+    {
+        var cmd = new Command("prepare", "Prepare a track folder with genre folders");
+        
+        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
+        
+        cmd.AddOption(trackDir);
+        cmd.SetHandler(Command, trackDir);
+        
+        return cmd;
+    }
+
     public static void Command(DirectoryInfo trackDir)
     {
         if (!trackDir.Exists) trackDir.Create();

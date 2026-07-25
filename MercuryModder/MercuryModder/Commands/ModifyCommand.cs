@@ -1,3 +1,4 @@
+using System.CommandLine;
 using System.Security.Cryptography;
 using System.Text;
 using MercuryModder.Assets;
@@ -14,12 +15,42 @@ using UAssetAPI.UnrealTypes;
 
 namespace MercuryModder.Commands;
 
-public class Modify
+public class ModifyCommand : ICommand
 {
+    public Command Build()
+    {
+        var cmd = new Command("modify", "Prepare assets to be replaced in game.");        
+        
+        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
+        var gameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the game base directory (WindowsNoEditor)") { IsRequired = true };
+        var outputDir = new Option<DirectoryInfo>(name: "--output", description: "Where to output modified files") { IsRequired = true };
+        var insertFirst = new Option<bool>(name: "--insert-first", description: "Whether to add the new tracks at the start of the list") { IsRequired = false };
+        var printModified = new Option<bool>(name: "--print-modified", description: "Whether to print a list of files that will be modified") { IsRequired = false };
+        var startId = new Option<int>(name: "--start-id", description: "What ID to start counting from when adding tracks") { IsRequired = false };
+        var recommendAll = new Option<bool>(name: "--recommend", description: "Whether to mark all songs as recommended (including modified infernos)") { IsRequired = false };
+        var gameVersion = new Option<uint>(name: "--version", description: "What game version to assign the songs to (defaults to Reverse)") { IsRequired = false };
+
+        startId.SetDefaultValue(7001);
+        gameVersion.SetDefaultValue(5);
+        
+        cmd.AddOption(trackDir);
+        cmd.AddOption(gameDir);
+        cmd.AddOption(outputDir);
+        cmd.AddOption(insertFirst);
+        cmd.AddOption(printModified);
+        cmd.AddOption(startId);
+        cmd.AddOption(recommendAll);
+        cmd.AddOption(gameVersion);
+
+        cmd.SetHandler(Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, recommendAll, gameVersion);
+        
+        return cmd;
+    }
+
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool setRecommended, uint gameVersion)
+    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool recommendAll, uint gameVersion)
     {
         var songs = new List<Song>();
         foreach (var genre in GENRES)
@@ -33,7 +64,7 @@ public class Modify
             foreach (var songDir in Directory.GetDirectories(genreDir))
             {
                 var song = Song.Load(songDir);
-                if (!Check.CheckSong(song, out var problems, out var warnings))
+                if (!CheckCommand.CheckSong(song, out var problems, out var warnings))
                 {
                     // Only fail if problems were found, skip warnings
                     if (problems.Length != 0) throw new Exception($"Found problems when loading {songDir}. Please run \"MercuryMapper check\" first.");
@@ -69,6 +100,8 @@ public class Modify
         }
         sortedSongs.Sort((a, b) => a.Item1.CompareTo(b.Item1));
 
+        var recommendStore = RecommendStore.ReadFromFile($"{trackDir}/recommend.toml");
+
         var files = new List<String>();
 
         var musicTablePath = $"{gameDir}/Mercury/Content/Table/MusicParameterTable.uasset";
@@ -86,7 +119,7 @@ public class Modify
             {
                 var song = Song.Load(songDir);
                 int infId = Convert.ToInt32(song.Directory.Name);
-                if (!Check.CheckInferno(song, out var problems, out var warnings))
+                if (!CheckCommand.CheckInferno(song, out var problems, out var warnings))
                 {
                     // Only fail if problems were found, skip warnings
                     if (problems.Length != 0) throw new Exception($"Found problems when loading {songDir} Inferno. Please run \"MercuryMapper check\" first.");
@@ -118,6 +151,14 @@ public class Modify
         var unlockData = unlockTable.Table.Data;
         var infUnlockData = infUnlockTable.Table.Data;
 
+        // Clear the recommended flag for all existing songs if --recommend or recommend.toml are set
+        if (recommendAll || recommendStore.Count != 0) {
+            foreach (var song in trackData)
+            {
+                (song["bRecommend"] as BoolPropertyData).Value = false;
+            }
+        }
+
         Directory.CreateDirectory($"{outputDir}/Mercury/Content/Sound/Bgm/");
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         AcbAsset cueFile = new AcbAsset($"{gameDir}/Mercury/Content/Sound/Bgm/MER_BGM.uasset");
@@ -133,8 +174,9 @@ public class Modify
 
             Console.WriteLine($"{songId:0000} | Processing {song.Info.Title} ({song.Info.Genre})");
 
-            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, gameVersion, setRecommended));
-            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, gameVersion, setRecommended));
+            bool recommend = recommendAll || recommendStore.Contains(song.GetRelativePath());
+            if (insertFirst) trackData.Insert(0, GetMPTEntry(musicTableAsset, song, songId, gameVersion, recommend));
+            else trackData.Add(GetMPTEntry(musicTableAsset, song, songId, gameVersion, recommend));
 
             unlockData.Add(GetUMTEntry(unlockTableAsset, song, songId));
             if (!song.Inferno.Dummy) infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, songId));
@@ -152,7 +194,7 @@ public class Modify
             files.Add($"Mercury/Content/UI/Textures/JACKET/{jacketFilename}.uasset");
 
             // TODO: Use audio file info from saturndata?
-            byte[] hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track.wav");
+            byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile($"{song.Directory}/track.wav");
             var hca = new HcaTrack(hcaBytes);
             awb.Add(new CriAfs2Entry
             {
@@ -170,7 +212,7 @@ public class Modify
             if (!song.Inferno.Dummy && File.Exists($"{song.Directory}/track-inferno.wav"))
             {
                 // Take care of an inf audio cut if one is provided
-                hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track-inferno.wav");
+                hcaBytes = AudioHelper.GetHCAFromWAVFile($"{song.Directory}/track-inferno.wav");
                 hca = new HcaTrack(hcaBytes);
                 awb.Add(new CriAfs2Entry
                 {
@@ -238,7 +280,7 @@ public class Modify
             string cueName;
             if (File.Exists(Path.Combine(song.Directory.ToString(), "track.wav"))) // Separate inf cut
             {
-                byte[] hcaBytes = GetHCAFromWAVFile($"{song.Directory}/track.wav");
+                byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile($"{song.Directory}/track.wav");
 
                 var hca = new HcaTrack(hcaBytes);
                 awb.Add(new CriAfs2Entry
@@ -263,7 +305,7 @@ public class Modify
             (songEntry["NotesDesignerInferno"] as StrPropertyData).Value = FString.FromString(song.Inferno.Entry.NotesDesigner);
             (songEntry["DifficultyInfernoLv"] as FloatPropertyData).Value = (float)song.Inferno.Entry.Level;
             (songEntry["ClearNormaRateInferno"] as FloatPropertyData).Value = song.Inferno.Entry.ClearThreshold;
-            if (setRecommended) (songEntry["bRecommend"] as BoolPropertyData).Value = true;
+            if (recommendAll || recommendStore.Contains(song.GetRelativePath())) (songEntry["bRecommend"] as BoolPropertyData).Value = true;
             // Add UIT entry
             infUnlockData.Add(GetUITEntry(infUnlockTableAsset, song, infId));
 
@@ -466,39 +508,5 @@ public class Modify
                 new IntPropertyData(FName.FromString(asset, "GainWaccaPoint")) { Value = 0 },
             }
         };
-    }
-
-    private static byte[] GetHCAFromWAVFile(string wavPath)
-    {
-        string hcaPath = Path.ChangeExtension(wavPath, "hca");
-        if (!File.Exists(wavPath))
-        {
-            var wavBytes = File.ReadAllBytes(wavPath);
-            byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, false);
-            File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
-            File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
-
-            return hcaBytes;
-        }
-        else
-        {
-            DateTime wavMtime = File.GetLastWriteTime(wavPath);
-            DateTime hcaMtime = File.GetLastWriteTime(hcaPath);
-
-            if (wavMtime != hcaMtime)
-            {
-                var wavBytes = File.ReadAllBytes(wavPath);
-                byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, false);
-                File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
-                File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
-
-                return hcaBytes;
-            }
-            else
-            {
-                // Same mtime so we can use the cached file
-                return File.ReadAllBytes(hcaPath);
-            }
-        }
     }
 }
