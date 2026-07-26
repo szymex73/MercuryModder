@@ -32,6 +32,7 @@
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.8" />
     <PackageReference Include="ZstdSharp.Port" Version="0.8.4" />
+    <PackageReference Include="VGAudio" Version="2.2.1" />
   </ItemGroup>
 
 </Project>

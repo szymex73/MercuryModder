@@ -4,6 +4,10 @@ using UAssetAPI;
 using UAssetAPI.ExportTypes;
 using UAssetAPI.PropertyTypes.Objects;
 using UAssetAPI.UnrealTypes;
+using VGAudio.Containers;
+using VGAudio.Formats.CriHca;
+using VGAudio.Formats;
+using VGAudio.Containers.Hca;
 
 namespace MercuryModder.Assets;
 
@@ -42,8 +46,10 @@ public class HcaTrack
 
     public HcaTrack(byte[] bytes)
     {
-        VGAudio.Containers.Hca.HcaReader reader = new VGAudio.Containers.Hca.HcaReader();
-        var hca = reader.ParseFile(bytes);
+        IAudioReader reader = new HcaReader();
+        var audio = reader.ReadWithConfig(bytes);
+        IAudioFormat format = audio.AudioFormat;
+        CriHcaFormat hca = audio.Audio.GetFormat<CriHcaFormat>();
 
         HasLoopData = hca.Hca.Looping;
         LoopStart = (uint)hca.Hca.LoopStartFrame;

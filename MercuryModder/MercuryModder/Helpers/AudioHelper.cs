@@ -1,49 +1,51 @@
 using VGAudio;
-using VGAudio.Cli;
+using VGAudio.Codecs.CriHca;
+using VGAudio.Containers;
+using VGAudio.Containers.Hca;
 using VGAudio.Containers.Wave;
+using VGAudio.Formats;
+using VGAudio.Formats.CriHca;
 
 namespace MercuryModder.Helpers;
 
 public class AudioHelper
 {
-    public static byte[] ConvertToHCA(byte[] bytes, FileType encodeType, bool loop) {
-        ConvertStatics.SetLoop(loop, 0, 0);
-
-        using (var ms = new MemoryStream(bytes))
+    public static byte[] ConvertWAVToHCA(byte[] bytes, bool loop) {
+        using (var mis = new MemoryStream(bytes))
         {
-            var wavReader = new WaveReader();
-            var wavInfo = wavReader.ReadMetadata(ms);
-
-            var options = new Options();
-            options.KeyCode = 0;
-            options.Loop = loop;
-
-            if(options.Loop) options.LoopEnd = int.MaxValue;
-            if(options.Loop) {
-                float length = (float) wavInfo.SampleCount / (float) wavInfo.SampleRate;
-                ConvertStatics.SetLoop(true, 0, (int) (length * 1000));
-            }
-
-            ms.Position = 0;
+            IAudioReader reader = new WaveReader();
+            AudioWithConfig audio = reader.ReadWithConfig(mis);
+            IAudioFormat format = audio.Audio.GetAllFormats().First();
             
-            byte[] track = ConvertStream.ConvertFile(options, ms, encodeType, FileType.Hca);
-
-            return track;
+            if (!loop) audio.Audio.SetLoop(false);
+            else
+            {
+                var pcmf = audio.Audio.GetAllFormats().First().WithLoop(true, 0, format.SampleCount);
+                audio = new AudioWithConfig(pcmf, audio.Configuration);
+            }
+            
+            IAudioWriter writer = new HcaWriter();
+            using (var mos = new MemoryStream())
+            {
+                writer.WriteToStream(audio.Audio, mos, audio.Configuration);
+                return mos.GetBuffer();
+            }
         }
     }
 
-    public static byte[] ConvertToWAV(byte[] bytes, FileType encodeType, bool loop) {
-        using (var ms = new MemoryStream(bytes))
+    public static byte[] ConvertHCAToWAV(byte[] bytes) {
+        using (var mis = new MemoryStream(bytes))
         {
-            var options = new Options();
-            options.KeyCode = 0;
-            options.Loop = loop;
+            IAudioReader reader = new HcaReader();
+            AudioWithConfig audio = reader.ReadWithConfig(mis);
 
-            if(options.Loop) options.LoopEnd = int.MaxValue;
+            IAudioWriter writer = new WaveWriter();
 
-            byte[] track = ConvertStream.ConvertFile(options, ms, encodeType, FileType.Wave);
-
-            return track;
+            using (var mos = new MemoryStream())
+            {
+                writer.WriteToStream(audio.Audio, mos, audio.Configuration);
+                return mos.GetBuffer();
+            }
         }
     }
 
@@ -53,7 +55,7 @@ public class AudioHelper
         if (!File.Exists(wavPath))
         {
             var wavBytes = File.ReadAllBytes(wavPath);
-            byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, looping);
+            byte[] hcaBytes = AudioHelper.ConvertWAVToHCA(wavBytes, looping);
             File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
             File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
 
@@ -67,7 +69,7 @@ public class AudioHelper
             if (wavMtime != hcaMtime)
             {
                 var wavBytes = File.ReadAllBytes(wavPath);
-                byte[] hcaBytes = AudioHelper.ConvertToHCA(wavBytes, VGAudio.Cli.FileType.Wave, looping);
+                byte[] hcaBytes = AudioHelper.ConvertWAVToHCA(wavBytes, looping);
                 File.WriteAllBytes(Path.ChangeExtension(wavPath, "hca"), hcaBytes);
                 File.SetLastWriteTime(hcaPath, File.GetLastWriteTime(wavPath)); // Set mtime
 
