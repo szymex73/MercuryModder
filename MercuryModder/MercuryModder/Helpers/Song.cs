@@ -9,6 +9,7 @@ public class Song
 {
     public DirectoryInfo Directory;
     public SongInfo Info { get; private set; }
+    public SongExtra? Extra { get ; private set; }
 
     public ChartContainer Normal { get; private set; }
     public ChartContainer Hard { get; private set; }
@@ -45,6 +46,11 @@ public class Song
 
     public static Song LoadSat(DirectoryInfo songDirectory)
     {
+        var extraPath = songDirectory.ToString() + "/extra.toml";
+        SongExtra extra = new();
+        if (File.Exists(extraPath)) extra = TomletMain.To<SongExtra>(File.ReadAllText(extraPath));
+
+
         var nra = new NotationReadArgs();
 
         ChartContainer normal = ChartContainer.GetDummy(1f);
@@ -85,7 +91,8 @@ public class Song
             Hard = hard,
             Expert = expert,
             Inferno = inferno,
-            LoadType = SongLoadType.LOAD_SAT
+            LoadType = SongLoadType.LOAD_SAT,
+            Extra = extra
         };
     }
 
@@ -94,6 +101,10 @@ public class Song
         var metaPath = songDirectory.ToString() + "/meta.toml";
         if (!File.Exists(metaPath)) throw new Exception("[LoadMer] Song directory does not contain a meta.toml file");
         var meta = TomletMain.To<SongInfo>(File.ReadAllText(metaPath));
+
+        var extraPath = songDirectory.ToString() + "/extra.toml";
+        SongExtra extra = new();
+        if (File.Exists(extraPath)) extra = TomletMain.To<SongExtra>(File.ReadAllText(extraPath));
 
         var nra = new NotationReadArgs();
 
@@ -143,7 +154,8 @@ public class Song
             Hard = hard,
             Expert = expert,
             Inferno = inferno,
-            LoadType = SongLoadType.LOAD_MER
+            LoadType = SongLoadType.LOAD_MER,
+            Extra = extra
         };
     }
 
@@ -167,6 +179,16 @@ public class Song
                 if (value == "Anime/POP") _genre = "Anipop";
                 else if (value == "HARDCORE TANO*C") _genre = "TanoC";
                 else _genre = value;
+            }
+        }
+
+        public string GenreOffline
+        {
+            get
+            {
+                if (_genre == "Vocaloid") return "Variety";
+                if (_genre == "2_5D") return "Variety";
+                return _genre;
             }
         }
         private string _genre;
@@ -270,5 +292,98 @@ public class Song
     {
         LOAD_MER,
         LOAD_SAT
+    }
+
+    public enum SongTag
+    {
+        NONE = 0,
+        // Genre
+        Original = 1,
+        Jpop = 2,
+        Anime = 3,
+        Vocaloid = 4,
+        _25D = 5,
+        AniPop = 6,
+        Variety = 7,
+        Touhou = 8,
+        // ?
+        SCORE_ROTATION = 1000,
+        SCORE_HIGH_SPEED = 1001,
+        // Artist
+        tanoc = 10000,
+        redalice = 10001,
+        tpazolite = 10002,
+        usao = 10003,
+        plight = 10004,
+        djgenki = 10005,
+        djnoriken = 10006,
+        massivenewkrew = 10007,
+        djmyosuke = 10008,
+        kobaryo = 10009,
+        aran = 10010,
+        minamotoya = 10011,
+        kentavez = 10012,
+        noizenecio = 10013,
+        srav3r = 10014,
+        getty = 10015,
+        laur = 10016,
+        gram = 10017,
+        arufa = 10100,
+        vtuber = 10101,
+        kizunaai = 10102,
+        hololive = 10103,
+        cosmo = 10104,
+        sakuzyo = 10105,
+        camellia = 10106,
+        // Collabs
+        COLLAB_GROOVE_COASTER = 10200,
+        COLLAB_BLEND_S = 10201,
+        COLLAB_PRETTY_SERIES = 10202,
+        COLLAB_DANMACHI = 10203,
+        COLLAB_LANOTA = 10204,
+        COLLAB_D4DJ = 10205,
+        COLLAB_AZURLANE = 10206,
+        COLLAB_ARCAEA = 10207,
+        COLLAB_MUSEDASH = 10208,
+        DIVE_WITH_YOU = 10209,
+        // Boss
+        BOSS_XTREME = 20000,
+        BOSS_TENSHI = 20001,
+    }
+
+    public class SongExtra
+    {
+        [TomlProperty("release_date")]
+        public DateTimeOffset? ReleaseDate { get; set; }
+        
+        [TomlProperty("inf_release_date")]
+        public DateTimeOffset? InfReleaseDate { get; set; }
+        
+        [TomlProperty("disable_date")]
+        public DateTimeOffset? DisableDate { get; set; }
+
+        [TomlProperty("inf_disable_date")]
+        public DateTimeOffset? InfDisableDate { get; set; }
+
+        [TomlProperty("tags")]
+        public SongTag[] Tags { get; set; } = {};
+
+        [TomlProperty("movie_asset")]
+        public string MovieAsset { get; set; } = "-";
+
+        [TomlProperty("init_item")]
+        public bool InitItem { get; set; } = true;
+        
+        [TomlProperty("inf_init_item")]
+        public bool InfInitItem { get; set; } = true;
+
+        [TomlProperty("inf_require_purchase")]
+        public bool InfRequirePurchase { get; set; } = false;
+
+        [TomlProperty("inf_wp_cost")]
+        public int InfWPCost { get; set; } = 0;
+
+        [TomlProperty("original")]
+        public bool Original { get; set; } = false;
     }
 }

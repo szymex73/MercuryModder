@@ -55,6 +55,10 @@ public class ModifyCommand : ICommand
                 DefaultValueFactory = _ => 5,
                 Required = false
             },
+            new Option<bool>("--offline") {
+                Description = "Whether inject target is a Offline build (3.10.00)",
+                Required = false
+            },
         };
         
         cmd.SetAction(Command);
@@ -64,6 +68,7 @@ public class ModifyCommand : ICommand
 
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
+    static string[] GENRES_OFFLINE = new string[] { "Anipop", "Touhou", "Variety", "Original", "TanoC" };
 
     public static void Command(ParseResult result)
     {
@@ -75,6 +80,8 @@ public class ModifyCommand : ICommand
         int startId = result.GetValue<int>("--start-id");
         bool recommendAll = result.GetValue<bool>("--recommend");
         uint gameVersion = result.GetValue<uint>("--version");
+        bool offline = result.GetValue<bool>("--offline");
+        
         var songs = new List<Song>();
         foreach (var genre in GENRES)
         {
@@ -413,7 +420,7 @@ public class ModifyCommand : ICommand
         File.WriteAllBytes($"{trackDir}/songs.tsv", DiVEwallHelper.FormatTsv(diveOutput));
     }
 
-    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId, uint gameVersion, bool recommended = false)
+    private static StructPropertyData GetMPTEntry(UAsset asset, Song song, int songId, uint gameVersion, bool recommended = false, bool offline = false)
     {
         return new StructPropertyData(FName.FromString(asset, $"{songId}"), FName.FromString(asset, "MusicParameterTableData"))
         {
@@ -425,7 +432,7 @@ public class ModifyCommand : ICommand
                 new StrPropertyData(FName.FromString(asset, "CopyrightMessage")) { Value = FString.FromString("-") },
                 new UInt32PropertyData(FName.FromString(asset, "VersionNo")) { Value = gameVersion },
                 new StrPropertyData(FName.FromString(asset, "AssetDirectory")) { Value = FString.FromString($"S{songId:00-000}") },
-                new StrPropertyData(FName.FromString(asset, "MovieAssetName")) { Value = FString.FromString("-") },
+                new StrPropertyData(FName.FromString(asset, "MovieAssetName")) { Value = FString.FromString(song.Extra.MovieAsset) },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetNameHard")) { Value = null },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetNameExpert")) { Value = null },
                 new StrPropertyData(FName.FromString(asset, "MovieAssetNameInferno")) { Value = null },
@@ -448,7 +455,7 @@ public class ModifyCommand : ICommand
 
                 new IntPropertyData(FName.FromString(asset, "WaccaPointCost")) { Value = 0 },
                 new BytePropertyData(FName.FromString(asset, "bCollaboration")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = 0 },
-                new BytePropertyData(FName.FromString(asset, "bWaccaOriginal")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = 0 },
+                new BytePropertyData(FName.FromString(asset, "bWaccaOriginal")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = Convert.ToByte(song.Extra.Original) },
                 new BytePropertyData(FName.FromString(asset, "TrainingLevel")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = 0 },
                 new BytePropertyData(FName.FromString(asset, "Reserved")) { ByteType = BytePropertyType.Byte, EnumType = FName.FromString(asset, "None"), Value = 0 },
 
@@ -472,17 +479,17 @@ public class ModifyCommand : ICommand
 
                 new FloatPropertyData(FName.FromString(asset, "PreviewBeginTime")) { Value = song.Info.PreviewStart },
                 new FloatPropertyData(FName.FromString(asset, "PreviewSeconds")) { Value = song.Info.PreviewLength },
-                new IntPropertyData(FName.FromString(asset, "ScoreGenre")) {Value = Array.IndexOf(GENRES, song.Info.Genre)},
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock0")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock1")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock2")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock3")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock4")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock5")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock6")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock7")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock8")) { Value = 0 },
-                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock9")) { Value = 0 },
+                new IntPropertyData(FName.FromString(asset, "ScoreGenre")) {Value = offline ? Array.IndexOf(GENRES, song.Info.GenreOffline) : Array.IndexOf(GENRES, song.Info.Genre)},
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock0")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(0)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock1")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(1)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock2")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(2)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock3")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(3)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock4")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(4)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock5")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(5)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock6")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(6)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock7")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(7)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock8")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(8)) },
+                new IntPropertyData(FName.FromString(asset, "MusicTagForUnlock9")) { Value = ((int)song.Extra.Tags.ElementAtOrDefault<Song.SongTag>(9)) },
                 new UInt64PropertyData(FName.FromString(asset, "WorkBuffer")) { Value = 0 },
                 new StrPropertyData(FName.FromString(asset, "AssetFullPath")) { Value = FString.FromString($"D:/project/Mercury/Mercury/Content//MusicData/S{songId:00-000}") }
             }
@@ -505,9 +512,9 @@ public class ModifyCommand : ICommand
                 new BoolPropertyData(FName.FromString(asset, "bVipPreOpen")) { Value = false },
                 new StrPropertyData(FName.FromString(asset, "NameTag")) { Value = FString.FromString(song.Info.Title) },
                 new StrPropertyData(FName.FromString(asset, "ExplanationTextTag")) { Value = FString.FromString(null) },
-                new Int64PropertyData(FName.FromString(asset, "ItemActivateStartTime")) { Value = 0 },
-                new Int64PropertyData(FName.FromString(asset, "ItemActivateEndTime")) { Value = 0 },
-                new BoolPropertyData(FName.FromString(asset, "bIsInitItem")) { Value = true },
+                new Int64PropertyData(FName.FromString(asset, "ItemActivateStartTime")) { Value = DateHelper.DateTimeToNum(song.Extra.ReleaseDate) },
+                new Int64PropertyData(FName.FromString(asset, "ItemActivateEndTime")) { Value = DateHelper.DateTimeToNum(song.Extra.DisableDate) },
+                new BoolPropertyData(FName.FromString(asset, "bIsInitItem")) { Value = song.Extra.InitItem },
                 new IntPropertyData(FName.FromString(asset, "GainWaccaPoint")) { Value = 0 },
             }
         };
@@ -520,14 +527,14 @@ public class ModifyCommand : ICommand
             Value = new List<PropertyData>
             {
                 new IntPropertyData(FName.FromString(asset, "MusicId")) { Value = (int) songId },
-                new BoolPropertyData(FName.FromString(asset, "bRequirePurchase")) { Value = false },
-                new IntPropertyData(FName.FromString(asset, "RequiredInfernoOpenWaccaPoint")) { Value = 0 },
-                new BoolPropertyData(FName.FromString(asset, "bVipPreOpen")) { Value = true },
+                new BoolPropertyData(FName.FromString(asset, "bRequirePurchase")) { Value = song.Extra.InfRequirePurchase },
+                new IntPropertyData(FName.FromString(asset, "RequiredInfernoOpenWaccaPoint")) { Value = song.Extra.InfWPCost },
+                new BoolPropertyData(FName.FromString(asset, "bVipPreOpen")) { Value = false },
                 new StrPropertyData(FName.FromString(asset, "NameTag")) { Value = FString.FromString(song.Info.Title) },
                 new StrPropertyData(FName.FromString(asset, "ExplanationTextTag")) { Value = FString.FromString(null) },
-                new Int64PropertyData(FName.FromString(asset, "ItemActivateStartTime")) { Value = 0 },
-                new Int64PropertyData(FName.FromString(asset, "ItemActivateEndTime")) { Value = 0 },
-                new BoolPropertyData(FName.FromString(asset, "bIsInitItem")) { Value = true },
+                new Int64PropertyData(FName.FromString(asset, "ItemActivateStartTime")) { Value = DateHelper.DateTimeToNum(song.Extra.InfReleaseDate) },
+                new Int64PropertyData(FName.FromString(asset, "ItemActivateEndTime")) { Value = DateHelper.DateTimeToNum(song.Extra.InfDisableDate) },
+                new BoolPropertyData(FName.FromString(asset, "bIsInitItem")) { Value = song.Extra.InfInitItem },
                 new IntPropertyData(FName.FromString(asset, "GainWaccaPoint")) { Value = 0 },
             }
         };
