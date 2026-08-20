@@ -19,30 +19,45 @@ public class ModifyCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("modify", "Prepare assets to be replaced in game.");        
+        var cmd = new Command("modify", "Prepare assets to be replaced in game.")
+        {
+            new Option<DirectoryInfo>("--tracks") { 
+                Description = "Path to a directory with the custom tracks",
+                Required = true,
+            },
+            new Option<DirectoryInfo>("--gameDir") {
+                Description = "Path to the game base directory (WindowsNoEditor)",
+                Required = true
+            },
+            new Option<DirectoryInfo>("--output") {
+                Description = "Where to output modified files",
+                Required = true
+            },
+            new Option<bool>("--insert-first") {
+                Description = "Whether to add the new tracks at the start of the list",
+                Required = false
+            },
+            new Option<bool>("--print-modified") {
+                Description = "Whether to print a list of files that will be modified",
+                Required = false
+            },
+            new Option<int>("--start-id") {
+                Description = "What ID to start counting from when adding tracks",
+                DefaultValueFactory = _ => 7001,
+                Required = false
+            },
+            new Option<bool>("--recommend") {
+                Description = "Whether to mark all songs as recommended (including modified infernos)",
+                Required = false
+            },
+            new Option<uint>("--version") {
+                Description = "What game version to assign the songs to (defaults to Reverse)",
+                DefaultValueFactory = _ => 5,
+                Required = false
+            },
+        };
         
-        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
-        var gameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the game base directory (WindowsNoEditor)") { IsRequired = true };
-        var outputDir = new Option<DirectoryInfo>(name: "--output", description: "Where to output modified files") { IsRequired = true };
-        var insertFirst = new Option<bool>(name: "--insert-first", description: "Whether to add the new tracks at the start of the list") { IsRequired = false };
-        var printModified = new Option<bool>(name: "--print-modified", description: "Whether to print a list of files that will be modified") { IsRequired = false };
-        var startId = new Option<int>(name: "--start-id", description: "What ID to start counting from when adding tracks") { IsRequired = false };
-        var recommendAll = new Option<bool>(name: "--recommend", description: "Whether to mark all songs as recommended (including modified infernos)") { IsRequired = false };
-        var gameVersion = new Option<uint>(name: "--version", description: "What game version to assign the songs to (defaults to Reverse)") { IsRequired = false };
-
-        startId.SetDefaultValue(7001);
-        gameVersion.SetDefaultValue(5);
-        
-        cmd.AddOption(trackDir);
-        cmd.AddOption(gameDir);
-        cmd.AddOption(outputDir);
-        cmd.AddOption(insertFirst);
-        cmd.AddOption(printModified);
-        cmd.AddOption(startId);
-        cmd.AddOption(recommendAll);
-        cmd.AddOption(gameVersion);
-
-        cmd.SetHandler(Command, trackDir, gameDir, outputDir, insertFirst, printModified, startId, recommendAll, gameVersion);
+        cmd.SetAction(Command);
         
         return cmd;
     }
@@ -50,8 +65,16 @@ public class ModifyCommand : ICommand
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, DirectoryInfo gameDir, DirectoryInfo outputDir, bool insertFirst, bool printModified, int startId, bool recommendAll, uint gameVersion)
+    public static void Command(ParseResult result)
     {
+        DirectoryInfo trackDir = result.GetValue<DirectoryInfo>("--tracks");
+        DirectoryInfo gameDir = result.GetValue<DirectoryInfo>("--gameDir");
+        DirectoryInfo outputDir = result.GetValue<DirectoryInfo>("--output");
+        bool insertFirst = result.GetValue<bool>("--insert-first");
+        bool printModified = result.GetValue<bool>("--print-modified");
+        int startId = result.GetValue<int>("--start-id");
+        bool recommendAll = result.GetValue<bool>("--recommend");
+        uint gameVersion = result.GetValue<uint>("--version");
         var songs = new List<Song>();
         foreach (var genre in GENRES)
         {

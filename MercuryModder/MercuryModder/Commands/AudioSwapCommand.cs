@@ -19,14 +19,19 @@ public class AudioSwapCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("audioswap", "Audio swap (WIP)");
+        var cmd = new Command("audioswap", "Audio swap (WIP)")
+        {
+            new Option<DirectoryInfo>("--audio") {
+                Description = "Path to a folder with .wav files to be swapped in",
+                Required = true
+            },
+            new Option<DirectoryInfo>("--gameDir") {
+                Description = "Path to the modified game base directory (WindowsNoEditor)",
+                Required = true
+            },
+        };
         
-        var audioDir = new Option<DirectoryInfo>(name: "--audio", description: "Path to a folder with .wav files to be swapped in") { IsRequired = true };
-        var gameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the modified game base directory (WindowsNoEditor)") { IsRequired = true };
-        
-        cmd.AddOption(audioDir);
-        cmd.AddOption(gameDir);
-        cmd.SetHandler(Command, audioDir, gameDir);
+        cmd.SetAction(Command);
         
         return cmd;
     }
@@ -38,8 +43,11 @@ public class AudioSwapCommand : ICommand
         {"MER_BGM_SYS_303", 20}
     };
 
-    public static void Command(DirectoryInfo audioDir, DirectoryInfo gameDir)
+    public static void Command(ParseResult result)
     {
+        DirectoryInfo audioDir = result.GetValue<DirectoryInfo>("--audio");
+        DirectoryInfo gameDir = result.GetValue<DirectoryInfo>("--gameDir");
+
         AcbAsset cueFile = new AcbAsset($"{gameDir}/Mercury/Content/Sound/Bgm/MER_BGM.uasset");
         CriAfs2Archive awb = new CriAfs2Archive();
         var awbId = (uint)cueFile.AddAwb("MER_BGM_V74");

@@ -6,18 +6,23 @@ public class PrepareCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("prepare", "Prepare a track folder with genre folders");
+        var cmd = new Command("prepare", "Prepare a track folder with genre folders")
+        {
+            new Option<DirectoryInfo>("--tracks") { 
+                Description = "Path to a directory with the custom tracks",
+                Required = true
+            }
+        };
         
-        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
-        
-        cmd.AddOption(trackDir);
-        cmd.SetHandler(Command, trackDir);
+        cmd.SetAction(Command);
         
         return cmd;
     }
 
-    public static void Command(DirectoryInfo trackDir)
+    public static void Command(ParseResult result)
     {
+        DirectoryInfo trackDir = result.GetValue<DirectoryInfo>("--tracks");
+
         if (!trackDir.Exists) trackDir.Create();
         
         trackDir.CreateSubdirectory("Anipop");

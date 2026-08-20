@@ -1,6 +1,6 @@
 ﻿using System;
 using System.CommandLine;
-using System.CommandLine.Builder;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using MercuryModder.Assets;
@@ -25,21 +25,9 @@ public class Program {
 
         foreach (var command in Commands)
         {
-            rootCommand.AddCommand(command.Build());
+            rootCommand.Add(command.Build());
         }
 
-        var parser = new CommandLineBuilder(rootCommand)
-            .UseDefaults()
-            .UseExceptionHandler(Program.ExceptionHandler)
-            .Build();
-
-        return parser.Invoke(args);
-    }
-
-    internal static void ExceptionHandler(Exception e, InvocationContext c)
-    {
-        Console.WriteLine("Unhandled exception");
-        Console.WriteLine(e);
-        Environment.Exit(-1);
+        return CommandLineParser.Parse(rootCommand, args).Invoke();
     }
 }

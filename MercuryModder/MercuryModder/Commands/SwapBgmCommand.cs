@@ -19,20 +19,27 @@ public class SwapBgmCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("swapbgm", "Swap attract BGM (don't use)");
+        var cmd = new Command("swapbgm", "Swap attract BGM (don't use)") {
+            new Option<FileInfo>("--newbgm") {
+                Description = "Path to a .wav file to be used as the new bgm",
+                Required = true
+            },
+            new Option<DirectoryInfo>("--gameDir") {
+                Description = "Path to the modified game base directory (WindowsNoEditor)",
+                Required = true
+            },
+        };
         
-        var newbgmFile = new Option<FileInfo>(name: "--newbgm", description: "Path to a .wav file to be used as the new bgm") { IsRequired = true };
-        var modifiedGameDir = new Option<DirectoryInfo>(name: "--gameDir", description: "Path to the modified game base directory (WindowsNoEditor)") { IsRequired = true };
-        
-        cmd.AddOption(newbgmFile);
-        cmd.AddOption(modifiedGameDir);
-        cmd.SetHandler(Command, newbgmFile, modifiedGameDir);
+        cmd.SetAction(Command);
         
         return cmd;
     }
 
-    public static void Command(FileInfo newbgmFile, DirectoryInfo gameDir)
+    public static void Command(ParseResult result)
     {
+        FileInfo newbgmFile = result.GetValue<FileInfo>("--newbgm");
+        DirectoryInfo gameDir = result.GetValue<DirectoryInfo>("--gameDir");
+
         Console.WriteLine("This will get removed at some point, please move to using the audioswap command instead.");
 
         if (!newbgmFile.Exists)

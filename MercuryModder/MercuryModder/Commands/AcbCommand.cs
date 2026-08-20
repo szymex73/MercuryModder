@@ -7,22 +7,32 @@ public class AcbCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("acb", "Acb asset import/export");
+        var cmd = new Command("acb", "Acb asset import/export") {
+            new Option<bool>("--import") {
+                Description = "Whether to import the acb back into the asset (by default acb is extracted out)",
+                Required = false
+            },
+            new Option<FileInfo>("--asset") {
+                Description = "Path to the cue file .uasset",
+                Required = true
+            },
+            new Option<FileInfo>("--acb") {
+                Description = "Path to the cue file .acb",
+                Required = true
+            },
+        };
         
-        var import = new Option<bool>(name: "--import", description: "Whether to import the acb back into the asset (by default acb is extracted out)") { IsRequired = false };
-        var assetPath = new Option<FileInfo>(name: "--asset", description: "Path to the cue file .uasset") { IsRequired = true };
-        var acbPath = new Option<FileInfo>(name: "--acb", description: "Path to the cue file .acb") { IsRequired = true };
-        
-        cmd.AddOption(import);
-        cmd.AddOption(assetPath);
-        cmd.AddOption(acbPath);
-        cmd.SetHandler(Command, assetPath, acbPath, import);
+        cmd.SetAction(Command);
         
         return cmd;
     }
 
-    public static void Command(FileInfo assetPath, FileInfo acbPath, bool import)
+    public static void Command(ParseResult result)
     {
+        bool import = result.GetValue<bool>("--import");
+        FileInfo assetPath = result.GetValue<FileInfo>("--asset");
+        FileInfo acbPath = result.GetValue<FileInfo>("--acb");
+
         AcbAsset cueFile = new AcbAsset(assetPath.ToString());
 
         if (import)

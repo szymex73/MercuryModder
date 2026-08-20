@@ -8,14 +8,19 @@ public class CheckCommand : ICommand
 {
     public Command Build()
     {
-        var cmd = new Command("check", "Go through the custom tracks and ensure the files are correct.");
+        var cmd = new Command("check", "Go through the custom tracks and ensure the files are correct.")
+        {
+            new Option<DirectoryInfo>("--tracks") {
+                Description = "Path to a directory with the custom tracks",
+                Required = true
+            },
+            new Option<bool>("--info") {
+                Description = "Whether to print song information",
+                Required = false
+            }
+        };
         
-        var trackDir = new Option<DirectoryInfo>(name: "--tracks", description: "Path to a directory with the custom tracks") { IsRequired = true };
-        var info = new Option<bool>(name: "--info", description: "Whether to print song information") { IsRequired = false };
-        
-        cmd.AddOption(trackDir);
-        cmd.AddOption(info);
-        cmd.SetHandler(Command, trackDir, info);
+        cmd.SetAction(Command);
         
         return cmd;
     }
@@ -23,8 +28,11 @@ public class CheckCommand : ICommand
     // Used both as dir names and for genre indexing
     static string[] GENRES = new string[] { "Anipop", "Vocaloid", "Touhou", "2_5D", "Variety", "Original", "TanoC" };
 
-    public static void Command(DirectoryInfo trackDir, bool printInfo)
+    public static void Command(ParseResult result)
     {
+        DirectoryInfo trackDir = result.GetValue<DirectoryInfo>("--tracks");
+        bool printInfo = result.GetValue<bool>("--info");
+
         foreach (var genre in GENRES)
         {
             var genreId = Array.IndexOf(GENRES, genre);
