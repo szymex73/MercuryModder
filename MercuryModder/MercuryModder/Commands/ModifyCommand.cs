@@ -261,7 +261,7 @@ public class ModifyCommand : ICommand
             Directory.CreateDirectory(chartOutDirectory);
             var nwa = new NotationWriteArgs()
             {
-                FormatVersion = FormatVersion.Mer,
+                ChartFormatVersion = ChartFormatVersion.Mer,
                 WriteMusicFilePath = WriteMusicFilePathOption.NoExtension
             };
             song.Normal.Entry.AudioFile = $"MER_BGM_S{songId:00_000}";
@@ -345,7 +345,7 @@ public class ModifyCommand : ICommand
             // Write the chart
             var nwa = new NotationWriteArgs()
             {
-                FormatVersion = FormatVersion.Mer,
+                ChartFormatVersion = ChartFormatVersion.Mer,
                 WriteMusicFilePath = WriteMusicFilePathOption.NoExtension
             };
             song.Inferno.Entry.AudioFile = cueName;

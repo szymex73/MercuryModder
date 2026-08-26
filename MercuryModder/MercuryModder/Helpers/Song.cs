@@ -247,7 +247,7 @@ public class Song
             Entry = NotationSerializer.ToEntry(path, nra, out var entryExceptions);
             if (entryExceptions.Count != 0) throw new ExceptionList($"Exceptions occured while loading entry for \"{path}\"", entryExceptions);
 
-            if (path.EndsWith(".mer") && Entry.FormatVersion != FormatVersion.Mer) throw new ExceptionList("Received a Sat format file with a .mer extension", []);
+            if (path.EndsWith(".mer") && Entry.ChartFormatVersion != ChartFormatVersion.Mer) throw new ExceptionList("Received a Sat format file with a .mer extension", []);
 
             FileName = Path.GetFileName(path);
             Chart.Build(Entry);
