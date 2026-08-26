@@ -36,13 +36,6 @@ public class AudioSwapCommand : ICommand
         return cmd;
     }
 
-    static string[] looped = new[]{"MER_BGM_SYS_302", "MER_BGM_SYS_303", "MER_BGM_SYS_306", "MER_BGM_SYS_307"};
-    static string[] loop2cues = new []{"MER_BGM_SYS_302", "MER_BGM_SYS_303"};
-    static Dictionary<string, int> loopIds = new Dictionary<string, int>{
-        {"MER_BGM_SYS_302", 18},
-        {"MER_BGM_SYS_303", 20}
-    };
-
     public static void Command(ParseResult result)
     {
         DirectoryInfo audioDir = result.GetValue<DirectoryInfo>("--audio");
@@ -58,8 +51,13 @@ public class AudioSwapCommand : ICommand
             var cueName = Path.GetFileNameWithoutExtension(newAudio);
             Console.WriteLine($"Cue name: {cueName}");
 
-            byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile(newAudio, looped.Contains(cueName));
-            var hca = new HcaTrack(hcaBytes);
+            var originalCue = cueFile.GetCue(cueName);
+            var originalTrack1 = cueFile.GetTrack(originalCue.TrackIds[0]);
+            byte loopFlag = (byte) originalTrack1.waveRow["LoopFlag"];
+            ushort extId = (ushort) originalTrack1.waveRow["ExtensionData"];
+
+            byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile(newAudio, loopFlag != 1);
+            HcaTrack hca = new HcaTrack(hcaBytes);
             awb.Add(new CriAfs2Entry
             {
                 Id = awbEntryId,
@@ -67,9 +65,6 @@ public class AudioSwapCommand : ICommand
             });
 
             // Adding new
-            int loopFlag = 1;
-            if (loop2cues.Contains(cueName)) loopFlag = 2;
-            int extId = loopIds.GetValueOrDefault(cueName, 65535);
             Console.WriteLine($"Extension Index: {extId}");
             var spkId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, false, loopFlag, extId);
             var hdpId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, true, loopFlag, extId);

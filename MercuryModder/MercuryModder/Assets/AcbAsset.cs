@@ -313,7 +313,8 @@ public class Track
     public ushort StreamAwbPortNo {get; set; }
     public ushort StreamAwbId {get; set; }
 
-    private CriRow row;
+    public CriRow row;
+    public CriRow waveRow;
     private AcbAsset parent;
 
     public static Track FromRow(AcbAsset asset, CriRow row)
@@ -337,6 +338,7 @@ public class Track
 
             row = row,
             parent = asset,
+            waveRow = waveformRow, // I'm sorry
         };
     }
 
