@@ -89,6 +89,7 @@ public class ModifyCommand : ICommand
             if (!Directory.Exists(genreDir))
             {
                 Console.WriteLine($"Directory {genre} does not exist, skipping...");
+                continue;
             }
 
             foreach (var songDir in Directory.GetDirectories(genreDir))
