@@ -55,3 +55,5 @@ nunit-*.xml
 
 builds/
 MercuryModder/MercuryModder/Commands/TestCommand.cs
+
+.vscode

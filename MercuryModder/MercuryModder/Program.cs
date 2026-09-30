@@ -17,6 +17,7 @@ public class Program {
         new ModifyCommand(),
         new PrepareCommand(),
         new SwapBgmCommand(),
+        new TablePatchCommand(),
         new TestCommand()
     };
     static int Main(string[] args)
