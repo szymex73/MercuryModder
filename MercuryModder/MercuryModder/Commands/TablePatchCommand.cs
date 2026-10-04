@@ -51,7 +51,7 @@ public class TablePatchCommand : ICommand
 
         Dictionary<string, UAsset> assetCache = new();
         
-        foreach (var patchFile in patchesDir.EnumerateFiles("*.toml").Order(Comparer<FileInfo>.Create((f1, f2) => f1.Name.CompareTo(f2.Name))))
+        foreach (var patchFile in patchesDir.EnumerateFiles("*.toml", SearchOption.AllDirectories).Order(Comparer<FileInfo>.Create((f1, f2) => f1.FullName.CompareTo(f2.FullName))))
         {
             var doc = TomlParser.ParseFile(patchFile.FullName);
             var tableName = doc.GetString("table");
