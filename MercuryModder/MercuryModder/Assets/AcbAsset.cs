@@ -65,8 +65,11 @@ public class AcbAsset
         StreamAwbTable.Load(MainTable.Rows[0]["StreamAwbHash"] as byte[]);
         StreamAwbHeadersTable = new CriTable();
         StreamAwbHeadersTable.Load(MainTable.Rows[0]["StreamAwbAfs2Header"] as byte[]);
-        WaveformExtensionDataTable = new CriTable();
-        WaveformExtensionDataTable.Load(MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[]);
+        byte[] wavExtData = MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[];
+        if (wavExtData.Length > 0) {
+            WaveformExtensionDataTable = new CriTable();
+            WaveformExtensionDataTable.Load(MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[]);
+        }
 
         CueTable.Fields["UserData"].DefaultValue = "";
         SynthTable.Fields["VoiceLimitGroupName"].DefaultValue = "";
@@ -225,7 +228,7 @@ public class AcbAsset
         MainTable.Rows[0]["CueNameTable"] = CueNameTable.Save();
         MainTable.Rows[0]["StreamAwbHash"] = StreamAwbTable.Save();
         MainTable.Rows[0]["StreamAwbAfs2Header"] = StreamAwbHeadersTable.Save();
-        MainTable.Rows[0]["WaveformExtensionData"] = WaveformExtensionDataTable.Save();
+        if (WaveformExtensionDataTable != null) MainTable.Rows[0]["WaveformExtensionData"] = WaveformExtensionDataTable.Save();
 
         // Extend AwbTocWork, seems to be used as some internal scratch buffer in memory after loading? (lol)
         // var tocWork = MainTable.Rows[0]["StreamAwbTocWork"] as byte[];
