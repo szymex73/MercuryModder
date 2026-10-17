@@ -54,7 +54,7 @@ public class AudioSwapCommand : ICommand
             var originalCue = cueFile.GetCue(cueName);
             var originalTrack1 = cueFile.GetTrack(originalCue.TrackIds[0]);
             byte loopFlag = (byte) originalTrack1.waveRow["LoopFlag"];
-            ushort extId = (ushort) originalTrack1.waveRow["ExtensionData"];
+            short extId = (short) originalTrack1.waveRow["ExtensionData"];
 
             byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile(newAudio, loopFlag != 1);
             HcaTrack hca = new HcaTrack(hcaBytes);
@@ -66,8 +66,8 @@ public class AudioSwapCommand : ICommand
 
             // Adding new
             Console.WriteLine($"Extension Index: {extId}");
-            var spkId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, false, loopFlag, extId);
-            var hdpId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, true, loopFlag, extId);
+            var spkId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, 0, loopFlag, extId);
+            var hdpId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, 1, loopFlag, extId);
             awbEntryId += 1;
 
             var cueNameId = cueFile.CueNameTable.Rows

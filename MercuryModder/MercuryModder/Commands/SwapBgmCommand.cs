@@ -59,8 +59,8 @@ public class SwapBgmCommand : ICommand
             Id = 0,
             FilePath = new FileInfo(Path.ChangeExtension(newbgmFile.FullName, "hca"))
         });
-        var spkId = cueFile.AddTrack(0, awbId, hca.NumSamples, false);
-        var hdpId = cueFile.AddTrack(0, awbId, hca.NumSamples, true);
+        var spkId = cueFile.AddTrack(0, awbId, hca.NumSamples, 0);
+        var hdpId = cueFile.AddTrack(0, awbId, hca.NumSamples, 1);
 
         // Find the Cue ID of the attract BGM
         int cueNameId = 0;

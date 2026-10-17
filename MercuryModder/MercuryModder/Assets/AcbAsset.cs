@@ -141,13 +141,14 @@ public class AcbAsset
         row["Header"] = header;
     }
 
-    public int AddTrack(uint streamAwbId, uint streamAwbPortNo, int sampleCount, bool headphoneTrack, int loopFlag = 1, int extData = 65535)
+    public int AddTrack(uint streamAwbId, uint streamAwbPortNo, int sampleCount, short commandIndex, int loopFlag = 1, short extData = -1, byte channels = 2, ushort sampleRate = 48000)
     {
         var waveform = WaveformTable.NewRow();
-        waveform["NumChannels"] = (byte)2;
+        waveform["NumChannels"] = channels;
         waveform["LoopFlag"] = (byte)loopFlag;
         waveform["NumSamples"] = (uint)sampleCount;
-        waveform["ExtensionData"] = (ushort)extData;
+        waveform["SamplingRate"] = sampleRate;
+        waveform["ExtensionData"] = (short)extData;
         waveform["StreamAwbPortNo"] = (ushort)streamAwbPortNo;
         waveform["StreamAwbId"] = (ushort)streamAwbId;
         WaveformTable.Rows.Add(waveform);
@@ -178,7 +179,7 @@ public class AcbAsset
         var trackEventId = TrackEventTable.Rows.Count - 1;
 
         var track = TrackTable.NewRow();
-        track["CommandIndex"] = (short)(headphoneTrack ? 1 : 0);
+        track["CommandIndex"] = commandIndex;
         track["EventIndex"] = (short)trackEventId;
         // track["TargetName"] = "";
         // track["TargetAcbName"] = "";
@@ -189,13 +190,15 @@ public class AcbAsset
     public uint AddCue(string name, int[] trackIds, int length)
     {
         var sequence = SequenceTable.NewRow();
+        var sequenceId = SequenceTable.Rows.Count;
         sequence["NumTracks"] = (short)trackIds.Length;
         var trackIndex = new byte[trackIds.Length * 2];
         for (int i = 0; i < trackIds.Length; i++) Buffer.BlockCopy(BitConverter.GetBytes((ushort)trackIds[i]).Reverse().ToArray(), 0, trackIndex, i * 2, 2);
         sequence["TrackIndex"] = trackIndex;
         sequence["CommandIndex"] = (short)1;
+        sequence["ControlWorkArea1"] = (ushort) sequenceId;
+        sequence["ControlWorkArea2"] = (ushort) sequenceId;
         SequenceTable.Rows.Add(sequence);
-        var sequenceId = SequenceTable.Rows.Count - 1;
 
         uint cueId = lastCueID + 1;
         lastCueID += 1;

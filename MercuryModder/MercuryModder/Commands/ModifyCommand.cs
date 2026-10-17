@@ -233,8 +233,8 @@ public class ModifyCommand : ICommand
                 FilePath = new FileInfo($"{song.Directory}/track.hca")
             });
 
-            var spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, false);
-            var hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, true);
+            var spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 0);
+            var hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 1);
             cueFile.AddCue($"MER_BGM_S{songId:00_000}", new int[] { spkId, hdpId }, (int)hca.Milliseconds);
             awbCounter += 1;
 
@@ -251,8 +251,8 @@ public class ModifyCommand : ICommand
                     FilePath = new FileInfo($"{song.Directory}/track-inferno.hca")
                 });
 
-                spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, false);
-                hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, true);
+                spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 0);
+                hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 1);
                 cueFile.AddCue($"MER_BGM_S{songId:00_000}_INF", new int[] { spkId, hdpId }, (int)hca.Milliseconds);
                 infCue = $"MER_BGM_S{songId:00_000}_INF";
                 awbCounter += 1;
@@ -320,8 +320,8 @@ public class ModifyCommand : ICommand
                     FilePath = new FileInfo($"{song.Directory}/track.hca")
                 });
 
-                var spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, false);
-                var hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, true);
+                var spkId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 0);
+                var hdpId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, 1);
                 cueFile.AddCue($"MER_BGM_S{infId:00_000}_INF", new int[] { spkId, hdpId }, (int)hca.Milliseconds);
                 awbCounter += 1;
                 cueName = $"MER_BGM_S{infId:00_000}_INF";
