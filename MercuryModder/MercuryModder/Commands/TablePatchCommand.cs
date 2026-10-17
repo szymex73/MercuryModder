@@ -50,21 +50,37 @@ public class TablePatchCommand : ICommand
         DirectoryInfo outputDir = result.GetValue<DirectoryInfo>("--output");
 
         Dictionary<string, UAsset> assetCache = new();
+        Dictionary<string, string> typeCache = new();
         
         foreach (var patchFile in patchesDir.EnumerateFiles("*.toml", SearchOption.AllDirectories).Order(Comparer<FileInfo>.Create((f1, f2) => f1.FullName.CompareTo(f2.FullName))))
         {
+            Console.WriteLine($"Processing {patchFile.FullName}");
             var doc = TomlParser.ParseFile(patchFile.FullName);
-            var tableName = doc.GetString("table");
+            string? tableName = null; 
+            string assetType = "";
+            if (doc.ContainsKey("table") && doc.ContainsKey("message")) throw new InvalidDataException($"Cannot specify both a data and message table ({patchFile.FullName})");
+            if (doc.ContainsKey("table")) {
+                tableName = doc.GetString("table");
+                assetType = "Table";
+            } else if (doc.ContainsKey("message"))
+            {
+                tableName = doc.GetString("message");
+                assetType = "Message";
+            } else
+            {
+                throw new InvalidDataException($"No table or message name specified ({patchFile.FullName})");
+            }
 
             List<RowEdit> edits = new();
             ReadDocument(doc, edits);
 
             if (!assetCache.TryGetValue(tableName, out UAsset tableAsset))
             {
-                tableAsset = new UAsset($"{gameDir}/Mercury/Content/Table/{tableName}.uasset", true, EngineVersion.VER_UE4_19);
-                // Directory.CreateDirectory($"{outputDir}/Mercury/Content/Table/");
-                // File.WriteAllText($"{outputDir}/Mercury/Content/Table/{tableName}_pre.json", tableAsset.SerializeJson(true));
+                tableAsset = new UAsset($"{gameDir}/Mercury/Content/{assetType}/{tableName}.uasset", true, EngineVersion.VER_UE4_19);
+                // Directory.CreateDirectory($"{outputDir}/Mercury/Content/{assetType}/");
+                // File.WriteAllText($"{outputDir}/Mercury/Content/{assetType}/{tableName}_pre.json", tableAsset.SerializeJson(true));
                 assetCache.Add(tableName, tableAsset);
+                typeCache.Add(tableName, assetType);
             }
             DataTableExport tableExport = tableAsset[tableName] as DataTableExport;
             List<StructPropertyData> tableData = tableExport.Table.Data;
@@ -108,9 +124,9 @@ public class TablePatchCommand : ICommand
                             AssignProperty(new PatchContext(tableAsset, tableExport.Table, newRow, field), kv.Value);
                         }
 
-                        if (fields.Count > 0)
+                        if (edit.Template == null && fields.Count > 0)
                         {
-                            throw new InvalidDataException($"New row {edit.Row} did not have the following fields: {String.Join(",", fields)}");
+                            throw new InvalidDataException($"\tNew row {edit.Row} did not overwrite the following fields: {String.Join(",", fields)}");
                         }
 
                         tableData.Add(newRow);
@@ -125,11 +141,12 @@ public class TablePatchCommand : ICommand
         foreach (KeyValuePair<string, UAsset> kv in assetCache)
         {
             string tableName = kv.Key;
+            string assetType = typeCache[tableName];
             UAsset outAsset = kv.Value;
 
-            Directory.CreateDirectory($"{outputDir}/Mercury/Content/Table/");
-            // File.WriteAllText($"{outputDir}/Mercury/Content/Table/{tableName}_post.json", outAsset.SerializeJson(true));
-            outAsset.Write($"{outputDir}/Mercury/Content/Table/{tableName}.uasset");
+            Directory.CreateDirectory($"{outputDir}/Mercury/Content/{assetType}/");
+            // File.WriteAllText($"{outputDir}/Mercury/Content/{assetType}/{tableName}_post.json", outAsset.SerializeJson(true));
+            outAsset.Write($"{outputDir}/Mercury/Content/{assetType}/{tableName}.uasset");
         }
     }
 
@@ -139,6 +156,15 @@ public class TablePatchCommand : ICommand
         {
             case BytePropertyData p:
                 p.Value = (byte) Expect<TomlLong>(ctx, val).Value;
+                break;
+            case Int8PropertyData p:
+                p.Value = (sbyte) Expect<TomlLong>(ctx, val).Value;
+                break;
+            case Int16PropertyData p:
+                p.Value = (short) Expect<TomlLong>(ctx, val).Value;
+                break;
+            case UInt16PropertyData p:
+                p.Value = (ushort) Expect<TomlLong>(ctx, val).Value;
                 break;
             case IntPropertyData p:
                 p.Value = (int) Expect<TomlLong>(ctx, val).Value;
