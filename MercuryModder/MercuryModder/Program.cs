@@ -18,6 +18,7 @@ public class Program {
         new PrepareCommand(),
         new SwapBgmCommand(),
         new TablePatchCommand(),
+        new VoiceAddCommand(),
         new TestCommand()
     };
     static int Main(string[] args)
