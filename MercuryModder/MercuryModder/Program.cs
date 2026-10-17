@@ -16,7 +16,6 @@ public class Program {
         new CheckCommand(),
         new ModifyCommand(),
         new PrepareCommand(),
-        new SwapBgmCommand(),
         new TablePatchCommand(),
         new VoiceAddCommand(),
         new TestCommand()

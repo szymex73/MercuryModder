@@ -65,7 +65,6 @@ public class AudioSwapCommand : ICommand
             });
 
             // Adding new
-            Console.WriteLine($"Extension Index: {extId}");
             var spkId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, 0, loopFlag, extId);
             var hdpId = cueFile.AddTrack(awbEntryId, awbId, hca.NumSamples, 1, loopFlag, extId);
             awbEntryId += 1;
@@ -77,15 +76,11 @@ public class AudioSwapCommand : ICommand
                 .FirstOrDefault(-1);
             if (cueNameId == -1) throw new Exception($"Could not find cue {cueName}");
 
-            Console.WriteLine($"Cue Name ID: {cueNameId}");
             var cueIndex = cueFile.CueNameTable.Rows[cueNameId].GetValue<ushort>("CueIndex");
-            Console.WriteLine($"Cue index: {cueIndex}");
 
             int[] trackIds = new int[] { spkId, hdpId };
-            Console.WriteLine($"{spkId} {hdpId}");
 
             var cue = cueFile.CueTable.Rows[cueIndex];
-            Console.WriteLine($"Cue ID: {cue.GetValue<uint>("CueId")}");
             var sequenceId = cue.GetValue<ushort>("ReferenceIndex");
             var sequence = cueFile.SequenceTable.Rows[sequenceId];
 

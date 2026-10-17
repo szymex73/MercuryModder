@@ -50,11 +50,11 @@ public class VoiceAddCommand : ICommand
         CriAfs2Archive awb = new CriAfs2Archive();
         uint awbCounter = 0;
         var awbId = (uint)cueFile.AddAwb("MER_VOICE_MOD");
-        Console.WriteLine(awbId);
 
         foreach (var file in audioDir.EnumerateFiles("*.wav"))
         {
             string cueName = Path.GetFileNameWithoutExtension(file.Name);
+            Console.WriteLine(cueName);
             byte[] hcaBytes = AudioHelper.GetHCAFromWAVFile(file.FullName);
             var hca = new HcaTrack(hcaBytes);
             awb.Add(new CriAfs2Entry
@@ -63,7 +63,6 @@ public class VoiceAddCommand : ICommand
                 FilePath = new FileInfo(Path.ChangeExtension(file.FullName, "hca"))
             });
 
-            Console.WriteLine(hca.SampleRate);
 
             var trackId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, -1, 1, -1, 2, hca.SampleRate);
             cueFile.AddCue(cueName, new int[] { trackId }, (int)hca.Milliseconds);
