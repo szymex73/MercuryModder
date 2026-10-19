@@ -187,7 +187,7 @@ public class AcbAsset
         return TrackTable.Rows.Count - 1;
     }
 
-    public uint AddCue(string name, int[] trackIds, int length)
+    public uint AddCue(string name, int[] trackIds, int length, short commandIndex = 1)
     {
         var sequence = SequenceTable.NewRow();
         var sequenceId = SequenceTable.Rows.Count;
@@ -195,7 +195,7 @@ public class AcbAsset
         var trackIndex = new byte[trackIds.Length * 2];
         for (int i = 0; i < trackIds.Length; i++) Buffer.BlockCopy(BitConverter.GetBytes((ushort)trackIds[i]).Reverse().ToArray(), 0, trackIndex, i * 2, 2);
         sequence["TrackIndex"] = trackIndex;
-        sequence["CommandIndex"] = (short)1;
+        sequence["CommandIndex"] = commandIndex;
         sequence["ControlWorkArea1"] = (ushort) sequenceId;
         sequence["ControlWorkArea2"] = (ushort) sequenceId;
         SequenceTable.Rows.Add(sequence);
