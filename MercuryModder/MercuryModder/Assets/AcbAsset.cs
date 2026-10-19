@@ -61,14 +61,20 @@ public class AcbAsset
         CueTable.Load(MainTable.Rows[0]["CueTable"] as byte[]);
         CueNameTable = new CriTable();
         CueNameTable.Load(MainTable.Rows[0]["CueNameTable"] as byte[]);
-        StreamAwbTable = new CriTable();
-        StreamAwbTable.Load(MainTable.Rows[0]["StreamAwbHash"] as byte[]);
-        StreamAwbHeadersTable = new CriTable();
-        StreamAwbHeadersTable.Load(MainTable.Rows[0]["StreamAwbAfs2Header"] as byte[]);
+        var streamAwbData = MainTable.Rows[0]["StreamAwbHash"] as byte[];
+        if (streamAwbData.Length > 16) {
+            StreamAwbTable = new CriTable();
+            StreamAwbTable.Load(streamAwbData);
+        }
+        var streamAwbHashData = MainTable.Rows[0]["StreamAwbAfs2Header"] as byte[];
+        if (streamAwbHashData.Length > 0) {
+            StreamAwbHeadersTable = new CriTable();
+            StreamAwbHeadersTable.Load(streamAwbHashData);
+        }
         byte[] wavExtData = MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[];
         if (wavExtData.Length > 0) {
             WaveformExtensionDataTable = new CriTable();
-            WaveformExtensionDataTable.Load(MainTable.Rows[0]["WaveformExtensionDataTable"] as byte[]);
+            WaveformExtensionDataTable.Load(wavExtData);
         }
 
         CueTable.Fields["UserData"].DefaultValue = "";
@@ -229,8 +235,8 @@ public class AcbAsset
         MainTable.Rows[0]["SequenceTable"] = SequenceTable.Save();
         MainTable.Rows[0]["CueTable"] = CueTable.Save();
         MainTable.Rows[0]["CueNameTable"] = CueNameTable.Save();
-        MainTable.Rows[0]["StreamAwbHash"] = StreamAwbTable.Save();
-        MainTable.Rows[0]["StreamAwbAfs2Header"] = StreamAwbHeadersTable.Save();
+        if (StreamAwbTable != null) MainTable.Rows[0]["StreamAwbHash"] = StreamAwbTable.Save();
+        if (StreamAwbHeadersTable != null) MainTable.Rows[0]["StreamAwbAfs2Header"] = StreamAwbHeadersTable.Save();
         if (WaveformExtensionDataTable != null) MainTable.Rows[0]["WaveformExtensionData"] = WaveformExtensionDataTable.Save();
 
         // Extend AwbTocWork, seems to be used as some internal scratch buffer in memory after loading? (lol)
