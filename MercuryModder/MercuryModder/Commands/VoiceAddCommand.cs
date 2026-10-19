@@ -64,7 +64,7 @@ public class VoiceAddCommand : ICommand
             });
 
 
-            var trackId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, -1, 1, -1, 2, hca.SampleRate);
+            var trackId = cueFile.AddTrack(awbCounter, awbId, hca.NumSamples, -1, 1, -1, hca.Channels, hca.SampleRate);
             cueFile.AddCue(cueName, new int[] { trackId }, (int)hca.Milliseconds);
             awbCounter += 1;
         }
