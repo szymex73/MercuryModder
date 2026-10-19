@@ -17,6 +17,7 @@ public class Program {
         new ModifyCommand(),
         new PrepareCommand(),
         new TablePatchCommand(),
+        new TableDiffCommand(),
         new VoiceAddCommand(),
         new TestCommand()
     };
